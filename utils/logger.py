@@ -21,7 +21,7 @@ class TaskmasterLogger:
             cls._instance.logger.setLevel(level)
             if not os.path.exists(cls._log_file):
                 open(cls._log_file, "a").close()
-            handler = logging._handlers.RotatingFileHandler(cls._log_file, maxBytes=cls._max_size, backupCount=cls._backup_count)
+            handler = RotatingFileHandler(cls._log_file, maxBytes=cls._max_size, backupCount=cls._backup_count)
             handler.setFormatter(formatter)
             cls._instance.logger.addHandler(handler)
             # Ajouter la journalisation des métriques
@@ -29,7 +29,7 @@ class TaskmasterLogger:
             cls._instance.metrics_logger.setLevel(logging.DEBUG)
             if not os.path.exists("taskmaster_metrics.log"):
                 open("taskmaster_metrics.log", "a").close()
-            metrics_handler = logging._handlers.RotatingFileHandler("taskmaster_metrics.log", maxBytes=cls._max_size, backupCount=cls._backup_count)
+            metrics_handler = RotatingFileHandler("taskmaster_metrics.log", maxBytes=cls._max_size, backupCount=cls._backup_count)
             metrics_handler.setFormatter(formatter)
             cls._instance.metrics_logger.addHandler(metrics_handler)
 
