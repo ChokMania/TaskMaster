@@ -1,8 +1,9 @@
 from cmd import Cmd
 
-from config.config import Configuration
-from signal_handler.signal_handler import SignalHandler
-from utils.logger import TaskmasterLogger
+from srcs.signals import SignalHandler
+from srcs.logger import TaskmasterLogger
+from srcs.configuration import ConfigurationLoader
+
 
 __all__ = [
     "TaskmasterShell",
@@ -24,7 +25,7 @@ class TaskmasterShell(Cmd):
 
     def load_config(self):
         try:
-            config = Configuration(self.config_file)
+            config = ConfigurationLoader(self.config_file)
             self.programs = config.programs
             self.logger.log_event("Configuration loaded")
         except Exception as e:

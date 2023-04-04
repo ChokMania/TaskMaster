@@ -1,13 +1,13 @@
 import yaml
 
-from program.program import Program
+from srcs.program import Program
 
 __all__ = [
-    "Configuration",
+    "ConfigurationLoader",
 ]
 
 
-class Configuration:
+class ConfigurationLoader:
     def __init__(self, filepath):
         self.filepath = filepath
         self.programs = self.load()
@@ -32,7 +32,6 @@ class Configuration:
                     program.start()
 
             return programs_dict
-
 
     def get_program_names(self):
         return list(self.programs.keys())

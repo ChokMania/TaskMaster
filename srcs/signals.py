@@ -1,6 +1,6 @@
 import signal
 
-from utils.logger import TaskmasterLogger
+from srcs.logger import TaskmasterLogger
 
 __all__ = [
     "SignalHandler",

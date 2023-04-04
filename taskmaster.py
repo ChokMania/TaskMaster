@@ -1,5 +1,6 @@
-from shell import TaskmasterShell
-from signal_handler import SignalHandler
+
+from srcs.shell import TaskmasterShell
+from srcs.signals import SignalHandler
 
 
 def register_signal_handlers():
@@ -8,6 +9,6 @@ def register_signal_handlers():
 
 
 if __name__ == "__main__":
-    shell = TaskmasterShell("config.yaml")
+    shell = TaskmasterShell("./config/config.yaml")
     register_signal_handlers()
     shell.cmdloop()

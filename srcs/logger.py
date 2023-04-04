@@ -28,8 +28,7 @@ class TaskmasterLogger:
 
     def log_error(self, message):
         import inspect
+
         method_name = inspect.stack()[1][3]
         print(f"{method_name} => {message}")
         self.logger.error(message)
-
-
