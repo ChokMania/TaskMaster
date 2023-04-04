@@ -10,3 +10,5 @@ build/
 *.log
 .idea/
 .vscode/
+.git
+venv
