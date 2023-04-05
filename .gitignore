@@ -28,3 +28,6 @@ taskmaster_metrics.log
 .black/
 .flake8/
 .isort.cfg
+
+# Fichiers de configuration de l'environnement virtuel
+venv
