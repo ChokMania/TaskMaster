@@ -1,12 +1,30 @@
-__pycache__/
+# Fichiers temporaires et de sauvegarde
+*.bak
+*.tmp
+*.swp
 *.pyc
 *.pyo
-*.pyd
-*.pyz
+
+# Dossiers et fichiers créés par les outils de développement
+__pycache__/
 *.egg-info/
 dist/
 build/
-*.egg
-*.log
-.idea/
+*.pyc
+
+# Fichiers de configuration personnels
 .vscode/
+.idea/
+
+# Fichiers et dossiers spécifiques au système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Fichiers journaux
+taskmaster.log
+taskmaster_metrics.log
+
+# Fichiers de formatage et de vérification de style
+.black/
+.flake8/
+.isort.cfg
