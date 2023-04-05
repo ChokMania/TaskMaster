@@ -1,4 +1,7 @@
 {
-    "address": ["/dev/log"],
-    "facility": "local0"
-  }
+  "address": [
+    "/var/log",
+    514
+  ],
+  "facility": "local0"
+}

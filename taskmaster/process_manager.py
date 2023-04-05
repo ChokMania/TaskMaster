@@ -10,7 +10,6 @@ class ProcessManager:
         self.config_path = config_path
         self.logger = logger
         self.processes = {}
-
         self.load_configuration()
 
     def load_configuration(self):
@@ -21,7 +20,10 @@ class ProcessManager:
             if program_name not in self.processes:
                 self.processes[program_name] = []
 
+
             process_controller = ProcessController(program_name, program_config, self.logger)
+            if process_controller.config.get("autostart", False):
+                process_controller.start()
             self.processes[program_name].append(process_controller)
 
     def start_all(self):
@@ -112,3 +114,6 @@ class ProcessManager:
                 process_controller.attach()
         else:
             self.logger.warning(f"Process '{process_name}' not found in configuration")
+
+    def detach_process(self, process_name):
+        raise NotImplementedError
