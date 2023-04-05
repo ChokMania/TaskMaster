@@ -28,7 +28,7 @@ class ProcessController:
             self.config["cmd"],
             shell=True,
             cwd=self.config.get("workingdir", None),
-            env=env,
+            # env=env,
             stdout=self.stdout,
             stderr=self.stderr,
         )

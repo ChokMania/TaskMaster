@@ -17,19 +17,19 @@ class ControlShell(cmd.Cmd):
 
     def do_status(self, arg):
         "Display the status of all programs"
-        self.process_manager.display_status()
+        self.process_manager.status()
 
     def do_start(self, arg):
         "Start a program: START <program_name>"
-        self.process_manager.start_program(arg)
+        self.process_manager.start_process(arg)
 
     def do_stop(self, arg):
         "Stop a program: STOP <program_name>"
-        self.process_manager.stop_program(arg)
+        self.process_manager.stop_process(arg)
 
     def do_restart(self, arg):
         "Restart a program: RESTART <program_name>"
-        self.process_manager.restart_program(arg)
+        self.process_manager.restart_process(arg)
 
     def do_reload(self, arg):
         "Reload the configuration file"
@@ -43,6 +43,7 @@ class ControlShell(cmd.Cmd):
 
     def do_EOF(self, arg):
         "Exit the Taskmaster Control Shell using Ctrl-D"
+        self.logger.warning(f"Received signal EOF. Stopping all processes.")
         return self.do_quit(arg)
 
     def do_attach(self, arg):
@@ -53,27 +54,29 @@ class ControlShell(cmd.Cmd):
         "Detach from a running program: DETACH <program_name>"
         self.process_manager.detach_program(arg)
 
-    
+
     def setup_signal_handlers(self):
         signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGABRT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
-        signal.signal(signal.SIGKILL, self.signal_handler)
         signal.signal(signal.SIGQUIT, self.signal_handler)
         signal.signal(signal.SIGHUP, self.signal_handler)
         signal.signal(signal.SIGUSR1, self.signal_handler)
         signal.signal(signal.SIGUSR2, self.signal_handler)
 
     def signal_handler(self, signum, frame):
-        if signum in (signal.SIGINT, signal.SIGTERM):
+        if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
             self.logger.warning(f"Received signal {signum}. Stopping all processes.")
-            self.stop_all()
+            self.process_manager.stop_all()
             self.logger.info("All processes stopped. Exiting.")
+            exit(0)
         elif signum == signal.SIGHUP:
             self.logger.warning(f"Received signal {signum}. Reloading configuration and restarting processes.")
-            self.reload_configuration()
+            self.process_manager.reload_configuration()
+            print("prompt = ", self.prompt, end="")
         elif signum == signal.SIGUSR1:
             self.logger.info(f"Received signal {signum}. Displaying current process status.")
-            self.status()
+            self.process_manager.status()
         elif signum == signal.SIGUSR2:
             self.toggle_logging_level()
         elif signum == signal.SIGWINCH:

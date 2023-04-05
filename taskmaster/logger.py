@@ -27,19 +27,25 @@ class Logger:
         return cls._instances[name]
 
     def log(self, message, level=logging.INFO):
+        print(message)
         self.logger.log(level, message)
 
     def debug(self, message):
+        print(message)
         self.logger.debug(message)
 
     def info(self, message):
+        print(message)
         self.logger.info(message)
 
     def warning(self, message):
+        print(message)
         self.logger.warning(message)
 
     def error(self, message):
+        print(message)
         self.logger.error(message)
 
     def critical(self, message):
+        print(message)
         self.logger.critical(message)

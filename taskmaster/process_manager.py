@@ -62,9 +62,36 @@ class ProcessManager:
 
     def reload_configuration(self):
         self.logger.info("Reloading configuration")
-        self.stop_all()
-        self.load_configuration()
-        self.start_all()
+        new_config = Config(self.config_path)
+
+        # Check if any process is added or removed
+        new_program_names = set(new_config['programs'].keys())
+        old_program_names = set(self.processes.keys())
+
+        # Remove processes that are not in the new configuration
+        for program_name in old_program_names - new_program_names:
+            self.stop_process(program_name)
+            del self.processes[program_name]
+
+        # Add new processes from the new configuration
+        for program_name in new_program_names - old_program_names:
+            program_config = new_config['programs'][program_name]
+            process_controller = ProcessController(program_name, program_config, self.logger)
+            self.processes[program_name] = [process_controller]
+            process_controller.start()
+
+        # Check for changes in existing processes
+        for program_name in old_program_names & new_program_names:
+            old_program_config = self.processes[program_name][0].config
+            new_program_config = new_config['programs'][program_name]
+
+            if old_program_config != new_program_config:
+                self.logger.debug(f"Configuration changed for program: {program_name}")
+                self.restart_process(program_name)
+                # Update the process configuration
+                for process_controller in self.processes[program_name]:
+                    process_controller.config = new_program_config
+        print("Configuration reloaded.")
 
     def status(self):
         for process_name, process_list in self.processes.items():

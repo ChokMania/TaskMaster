@@ -7,7 +7,7 @@ from taskmaster.logger import Logger
 def parse_args():
     parser = argparse.ArgumentParser(description="Taskmaster - A job control daemon")
     parser.add_argument("-c", "--config", required=True, help="Path to the configuration file")
-    parser.add_argument("-l", "--logfile", default="taskmaster.log", help="Path to the log file")
+    parser.add_argument("-l", "--logfile", default="./taskmaster.log", help="Path to the log file")
     parser.add_argument("--log-level", default="INFO", help="Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)")
     parser.add_argument("-d", "--daemonize", action="store_true", help="Run Taskmaster in daemon mode")
     parser.add_argument("-u", "--user", help="User to run Taskmaster as (requires root)")
