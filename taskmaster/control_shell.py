@@ -16,19 +16,19 @@ class ControlShell(cmd.Cmd):
         self.setup_signal_handlers()
 
     def do_status(self, arg):
-        "Display the status of all programs"
+        "Display the status of all processes"
         self.process_manager.status()
 
     def do_start(self, arg):
-        "Start a program: START <program_name>"
+        "Start a process: START <process name>"
         self.process_manager.start_process(arg)
 
     def do_stop(self, arg):
-        "Stop a program: STOP <program_name>"
+        "Stop a process: STOP <process name>"
         self.process_manager.stop_process(arg)
 
     def do_restart(self, arg):
-        "Restart a program: RESTART <program_name>"
+        "Restart a process: RESTART <process name>"
         self.process_manager.restart_process(arg)
 
     def do_reload(self, arg):
@@ -47,11 +47,11 @@ class ControlShell(cmd.Cmd):
         return self.do_quit(arg)
 
     def do_attach(self, arg):
-        "Attach to a running program: ATTACH <program_name>"
+        "Attach to a running process: ATTACH <process name>"
         self.process_manager.attach_program(arg)
 
     def do_detach(self, arg):
-        "Detach from a running program: DETACH <program_name>"
+        "Detach from a running process: DETACH <process name>"
         self.process_manager.detach_program(arg)
 
 

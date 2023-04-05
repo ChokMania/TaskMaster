@@ -1,0 +1,4 @@
+{
+    "address": ["/dev/log"],
+    "facility": "local0"
+  }

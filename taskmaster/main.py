@@ -1,22 +1,24 @@
-import argparse
+import json
+
 from taskmaster.process_manager import ProcessManager
 from taskmaster.control_shell import ControlShell
 from taskmaster.logger import Logger
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Taskmaster - A job control daemon")
-    parser.add_argument("-c", "--config", required=True, help="Path to the configuration file")
-    parser.add_argument("-l", "--logfile", default="./taskmaster.log", help="Path to the log file")
-    parser.add_argument("--log-level", default="INFO", help="Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)")
-    parser.add_argument("-d", "--daemonize", action="store_true", help="Run Taskmaster in daemon mode")
-    parser.add_argument("-u", "--user", help="User to run Taskmaster as (requires root)")
-    parser.add_argument("-g", "--group", help="Group to run Taskmaster as (requires root)")
-    return parser.parse_args()
+from taskmaster.utils import parse_args, drop_privileges
 
 def main():
     args = parse_args()
-    logger = Logger("TaskMaster", log_level=args.log_level, log_file=args.logfile)
+
+    smtp_config = None
+    if args.smtp_config:
+        with open(args.smtp_config, "r") as f:
+            smtp_config = json.load(f)
+
+    syslog_config = None
+    if args.syslog_config:
+        with open(args.syslog_config, "r") as f:
+            syslog_config = json.load(f)
+
+    logger = Logger("TaskMaster", log_file=args.logfile, log_level=args.log_level, smtp_config=smtp_config, syslog_config=syslog_config)
     logger.info("Starting TaskMaster")
 
     if args.daemonize:
@@ -48,6 +50,8 @@ def main():
             control_shell.cmdloop()
 
     else:
+        if args.user and args.group:
+            drop_privileges(args.user, args.group)
         process_manager = ProcessManager(args.config, logger)
         process_manager.start_all()
         control_shell = ControlShell(process_manager, logger)

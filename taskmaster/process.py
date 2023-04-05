@@ -59,6 +59,22 @@ class ProcessController:
         else:
             return "stopped"
 
+    def attach(self):
+        if not self.process or self.process.poll() is not None:
+            self.logger.warning(f"Process '{self.name}' is not running")
+            return
+        self.logger.info(f"Attaching to process '{self.name}'")
+        try:
+            child = subprocess.Popen(
+                self.config["cmd"],
+                shell=True,
+                cwd=self.config.get("workingdir", None),
+                # env=env,
+            )
+            child.communicate()
+        except Exception as e:
+            self.logger.warning(f"Error attaching to process '{{self.name}}': {e}")
+
     def _get_output_stream(self, stream_type):
         output_path = self.config.get(stream_type, None)
         if output_path:

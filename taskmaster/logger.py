@@ -1,5 +1,5 @@
 import logging
-from logging.handlers import RotatingFileHandler
+from logging.handlers import RotatingFileHandler, SMTPHandler, SysLogHandler
 import os
 
 
@@ -9,7 +9,7 @@ class Logger:
     _max_size = 1024 * 1024 * 10  # 10MB
     _backup_count = 5
 
-    def __new__(cls, name, log_file, log_level="INFO"):
+    def __new__(cls, name, log_file, log_level="INFO", smtp_config=None, syslog_config=None):
         if name not in cls._instances:
             instance = super().__new__(cls)
             instance.logger = logging.getLogger(name)
@@ -22,6 +22,27 @@ class Logger:
                 file_handler = RotatingFileHandler(log_file, maxBytes=cls._max_size, backupCount=cls._backup_count)
                 file_handler.setFormatter(formatter)
                 instance.logger.addHandler(file_handler)
+
+            if smtp_config:
+                smtp_handler = SMTPHandler(
+                    mailhost=smtp_config["mailhost"],
+                    fromaddr=smtp_config["fromaddr"],
+                    toaddrs=smtp_config["toaddrs"],
+                    subject=smtp_config["subject"],
+                    credentials=smtp_config["credentials"],
+                    secure=smtp_config["secure"],
+                )
+                smtp_handler.setLevel(logging.ERROR)
+                smtp_handler.setFormatter(formatter)
+                instance.logger.addHandler(smtp_handler)
+
+            if syslog_config:
+                syslog_handler = SysLogHandler(
+                    address=syslog_config["address"],
+                    facility=syslog_config["facility"],
+                )
+                syslog_handler.setFormatter(formatter)
+                instance.logger.addHandler(syslog_handler)
 
             cls._instances[name] = instance
         return cls._instances[name]
