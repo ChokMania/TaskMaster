@@ -50,10 +50,9 @@ def main():
             control_shell.cmdloop()
 
     else:
-        if args.user and args.group:
-            drop_privileges(args.user, args.group)
+        # if args.user and args.group:
+            # drop_privileges(args.user, args.group)
         process_manager = ProcessManager(args.config, logger)
-        process_manager.start_all()
         control_shell = ControlShell(process_manager, logger)
         control_shell.cmdloop()
 

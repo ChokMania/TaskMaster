@@ -3,7 +3,6 @@ import signal
 import logging
 from taskmaster.logger import Logger
 
-
 class ControlShell(cmd.Cmd):
     intro = "Taskmaster Control Shell. Type help or ? to list commands.\n"
     prompt = "(taskmaster) "
@@ -48,12 +47,11 @@ class ControlShell(cmd.Cmd):
 
     def do_attach(self, arg):
         "Attach to a running process: ATTACH <process name>"
-        self.process_manager.attach_program(arg)
+        self.process_manager.attach_process(arg)
 
     def do_detach(self, arg):
         "Detach from a running process: DETACH <process name>"
-        self.process_manager.detach_program(arg)
-
+        self.process_manager.detach_process(arg)
 
     def setup_signal_handlers(self):
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -73,7 +71,6 @@ class ControlShell(cmd.Cmd):
         elif signum == signal.SIGHUP:
             self.logger.warning(f"Received signal {signum}. Reloading configuration and restarting processes.")
             self.process_manager.reload_configuration()
-            print("prompt = ", self.prompt, end="")
         elif signum == signal.SIGUSR1:
             self.logger.info(f"Received signal {signum}. Displaying current process status.")
             self.process_manager.status()
@@ -81,6 +78,8 @@ class ControlShell(cmd.Cmd):
             self.toggle_logging_level()
         elif signum == signal.SIGWINCH:
             self.handle_terminal_resize()
+        self.stdout.write(self.prompt)
+        self.stdout.flush()
 
     def toggle_logging_level(self):
         current_level = self.logger.logger.getEffectiveLevel()
