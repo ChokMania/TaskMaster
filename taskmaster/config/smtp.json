@@ -1,16 +1,13 @@
 {
   "mailhost": [
-    "smtp.example.com",
-    587
+    "localhost",
+    25
   ],
-  "fromaddr": "noreply@example.com",
+  "fromaddr": "noreply@taskmaster.com",
   "toaddrs": [
-    "admin@example.com"
+    "root@localhost"
   ],
   "subject": "TaskMaster Alert",
-  "credentials": [
-    "user@example.com",
-    "password"
-  ],
+  "credentials": null,
   "secure": []
 }

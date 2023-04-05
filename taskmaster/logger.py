@@ -36,14 +36,13 @@ class Logger:
                 smtp_handler.setFormatter(formatter)
                 instance.logger.addHandler(smtp_handler)
 
-            # if syslog_config:
-                # syslog_handler = SysLogHandler(
-                #     address=syslog_config["address"],
-                #     facility=syslog_config["facility"],
-                # )
-            #     syslog_handler = SysLogHandler(address="/var/log")
-            #     syslog_handler.setFormatter(formatter)
-            #     instance.logger.addHandler(syslog_handler)
+            if syslog_config:
+                syslog_handler = SysLogHandler(
+                    address=syslog_config["address"],
+                    facility=syslog_config["facility"],
+                )
+                syslog_handler.setFormatter(formatter)
+                instance.logger.addHandler(syslog_handler)
 
             cls._instances[name] = instance
         return cls._instances[name]

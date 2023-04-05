@@ -24,6 +24,7 @@ class ControlShell(cmd.Cmd):
 
     def do_stop(self, arg):
         "Stop a process: STOP <process name>"
+        self.logger.error("Stopping process..")
         self.process_manager.stop_process(arg)
 
     def do_restart(self, arg):
