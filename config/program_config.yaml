@@ -17,7 +17,6 @@ programs:
     stderr: /tmp/nginx.stderr
     env:
       STARTED_BY: taskmaster
-      ANSWER: 42
   apache:
     cmd: '/usr/sbin/apache2'
     numprocs: 1
@@ -32,8 +31,7 @@ programs:
     starttime: 5
     stopsignal: TERM
     stoptime: 10
-    stdout: /tmp/nginx.stdout
-    stderr: /tmp/nginx.stderr
+    stdout: /tmp/apache2.stdout
+    stderr: /tmp/apache2.stderr
     env:
       STARTED_BY: taskmaster
-      ANSWER: 42

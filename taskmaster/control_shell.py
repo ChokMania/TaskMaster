@@ -11,7 +11,6 @@ class ControlShell(cmd.Cmd):
         super(ControlShell, self).__init__()
         self.logger = logger
         self.process_manager = process_manager
-
         self.setup_signal_handlers()
 
     def do_status(self, arg):
