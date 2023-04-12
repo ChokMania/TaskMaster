@@ -3,6 +3,18 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+requirements = [
+    "pyyaml",
+    "python-daemon",
+]
+
+dev_requirements = [
+    "black",
+    "flake8",
+    "isort",
+]
+
+
 setup(
     name="taskmaster",
     version="0.1.0",
@@ -28,16 +40,8 @@ setup(
         "Programming Language :: Python :: 3.9",
     ],
     python_requires=">=3.7",
-    install_requires=[
-        # Add your project's dependencies here
-        "pyyaml",
-        "python-daemon",
-    ],
+    install_requires=requirements
     extras_require={
-        "dev": [
-            "black",
-            "flake8",
-            "isort",
-        ],
+        "dev": dev_requirements,
     },
 )
