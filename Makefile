@@ -31,4 +31,13 @@ kill-usr2:
 kill-hup:
 	@kill -HUP `ps -x | grep "taskmaster" | grep -v "grep" | awk '{print $$1}'`
 
-.PHONY: run test lint format install-deps install-deps-dev lint-format kill-hup kill-usr1 kill-usr2 kill
+kill-nginx:
+	kill `ps -x | grep "nginx" | grep -v "grep" | grep "master process" | awk '{print $$1}'`
+
+kill-nginx-sigterm:
+	@kill -TERM `ps -x | grep "nginx" | grep -v "grep" | grep "master process" | awk '{print $$1}'`
+
+kill-nginx-sigkill:
+	@kill -9 `ps -x | grep "nginx" | grep -v "grep" | grep "master process" | awk '{print $$1}'`
+
+.PHONY: run test lint format install-deps install-deps-dev lint-format kill-hup kill-usr1 kill-usr2 kill kill-nginx kill-nginx-sigterm
