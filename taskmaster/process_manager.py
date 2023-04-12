@@ -117,3 +117,7 @@ class ProcessManager:
 
     def detach_process(self, process_name):
         raise NotImplementedError
+
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.")
+    print("Please run main.py instead.")

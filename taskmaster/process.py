@@ -87,3 +87,7 @@ class ProcessController:
             self.stdout.close()
         if self.stderr:
             self.stderr.close()
+
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.")
+    print("Please run main.py instead.")

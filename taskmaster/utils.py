@@ -32,3 +32,7 @@ def parse_args():
     parser.add_argument("--smtp-config", default="./taskmaster/config/smtp.json", help="Path to the SMTP configuration file (JSON format)")
     parser.add_argument("--syslog-config", default="./taskmaster/config/syslog.json", help="Path to the Syslog configuration file (JSON format)")
     return parser.parse_args()
+
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.")
+    print("Please run main.py instead.")
