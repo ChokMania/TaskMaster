@@ -11,7 +11,7 @@ programs:
       - 2
     startretries: 3
     starttime: 5
-    stopsignal: TERM
+    stopsignal: SIGTERM
     stoptime: 10
     stdout: /tmp/nginx.stdout
     stderr: /tmp/nginx.stderr
@@ -29,7 +29,7 @@ programs:
       - 2
     startretries: 3
     starttime: 5
-    stopsignal: TERM
+    stopsignal: SIGTERM
     stoptime: 10
     stdout: /tmp/apache2.stdout
     stderr: /tmp/apache2.stderr
