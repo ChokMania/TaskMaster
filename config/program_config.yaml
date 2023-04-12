@@ -23,7 +23,7 @@ programs:
     umask: 022
     workingdir: /tmp
     autostart: false
-    autorestart: unexpected
+    autorestart: always
     exitcodes:
       - 0
       - 2
