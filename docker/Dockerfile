@@ -18,8 +18,8 @@ CMD service rsyslog start ; service postfix start ; bash
 
 
 # Build the container image with:
-# docker build -t taskmaster_image-v1.0 .
+# docker build -t taskmaster-image-v1.0 .
 
 # to run it with a shared directory:
-# docker run -it --name taskmaster-container-1 -v /path/to/host/dir:/shared taskmaster_image-v1.0
+# docker run -it --name taskmaster-container-1 -v /path/to/host/dir:/shared taskmaster-image-v1.0
 
