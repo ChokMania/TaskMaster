@@ -1,6 +1,6 @@
 programs:
-  nginx:
-    cmd: '/usr/sbin/nginx -g "daemon off;" -c /etc/nginx/conf.d/mynginx.conf'
+  ping:
+    cmd: 'ping 8.8.8.8'
     numprocs: 1
     umask: 022
     workingdir: /tmp
@@ -13,25 +13,7 @@ programs:
     starttime: 5
     stopsignal: SIGTERM
     stoptime: 10
-    stdout: /tmp/nginx.stdout
-    stderr: /tmp/nginx.stderr
-    env:
-      STARTED_BY: taskmaster
-  apache:
-    cmd: '/usr/sbin/apache2 -DFOREGROUND'
-    numprocs: 1
-    umask: 022
-    workingdir: /tmp
-    autostart: false
-    autorestart: always
-    exitcodes:
-      - 0
-      - 2
-    startretries: 3
-    starttime: 5
-    stopsignal: SIGTERM
-    stoptime: 10
-    stdout: /tmp/apache2.stdout
-    stderr: /tmp/apache2.stderr
+    stdout: /tmp/ping.stdout
+    stderr: /tmp/poimng.stderr
     env:
       STARTED_BY: taskmaster
