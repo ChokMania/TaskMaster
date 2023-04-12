@@ -14,6 +14,7 @@ class ProcessController:
         self.stderr = None
 
     def start(self):
+        print("Starting process: ", self.name)
         if self.process and self.process.poll() is None:
             self.logger.warning(f"Process '{self.name}' is already running")
             return
@@ -28,7 +29,7 @@ class ProcessController:
             self.config["cmd"],
             shell=True,
             cwd=self.config.get("workingdir", None),
-            # env=env,
+            env=env,
             stdout=self.stdout,
             stderr=self.stderr,
         )
