@@ -40,8 +40,8 @@ setup(
         "Programming Language :: Python :: 3.9",
     ],
     python_requires=">=3.7",
-    install_requires=requirements
+    install_requires=requirements,
     extras_require={
         "dev": dev_requirements,
-    },
+    }
 )
