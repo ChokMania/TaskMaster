@@ -1,6 +1,6 @@
 programs:
   nginx:
-    cmd: '/usr/sbin/nginx -c /etc/nginx/conf.d/mynginx.conf'
+    cmd: '/usr/sbin/nginx -g "daemon off;" -c /etc/nginx/conf.d/mynginx.conf'
     numprocs: 1
     umask: 022
     workingdir: /tmp
@@ -18,7 +18,7 @@ programs:
     env:
       STARTED_BY: taskmaster
   apache:
-    cmd: '/usr/sbin/apache2'
+    cmd: '/usr/sbin/apache2 -DFOREGROUND'
     numprocs: 1
     umask: 022
     workingdir: /tmp
