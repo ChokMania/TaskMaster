@@ -13,6 +13,7 @@ VOLUME /shared
 
 COPY .bashrc /root/
 COPY .vimrc /root/
+COPY mynginx.conf /etc/nginx/conf.d/
 
 CMD service rsyslog start ; service postfix start ; bash
 

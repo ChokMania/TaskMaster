@@ -29,8 +29,8 @@ def parse_args():
     parser.add_argument("-d", "--daemonize", action="store_true", help="Run Taskmaster in daemon mode")
     parser.add_argument("-u", "--user", help="User to run Taskmaster as (requires root)")
     parser.add_argument("-g", "--group", help="Group to run Taskmaster as (requires root)")
-    parser.add_argument("--smtp-config", default="./taskmaster/config/smtp.json", help="Path to the SMTP configuration file (JSON format)")
-    parser.add_argument("--syslog-config", default="./taskmaster/config/syslog.json", help="Path to the Syslog configuration file (JSON format)")
+    parser.add_argument("--smtp-config", default="./config/smtp.json", help="Path to the SMTP configuration file (JSON format)")
+    parser.add_argument("--syslog-config", default="./config/syslog.json", help="Path to the Syslog configuration file (JSON format)")
     return parser.parse_args()
 
 if __name__ == "__main__":
