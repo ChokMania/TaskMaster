@@ -99,8 +99,6 @@ class ControlShell(cmd.Cmd):
                 self.process_manager.status()
             elif signum == signal.SIGUSR2:
                 self.toggle_logging_level()
-            elif signum == signal.SIGWINCH:
-                self.handle_terminal_resize()
             self.display_cli_prompt()
         except Exception as e:
             self.logger.error(f"Error while handling signal {signum}: {e}")
@@ -114,10 +112,6 @@ class ControlShell(cmd.Cmd):
             self.logger.logger.setLevel(logging.INFO)
             self.logger.info("Switched logging level to INFO.")
 
-    def handle_terminal_resize(self):
-        pass
-        # columns, rows = shutil.get_terminal_size()
-        # self.logger.debug(f"Terminal resized to {columns} columns and {rows} rows.")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,11 @@ class ProcessManager:
         self._start_monitoring()
 
     def _load_configuration(self):
-        config = Config(self.config_path)
+        try:
+            config = Config(self.config_path)
+        except Exception as e:
+            self.logger.error(f"Error while loading configuration: {e}")
+            return
 
         if not config["programs"]:
             self.logger.error("No program found in configuration file")
@@ -26,12 +30,21 @@ class ProcessManager:
             if program_name not in self.processes:
                 self.processes[program_name] = []
 
-            process_controller = ProcessController(
-                program_name, program_config, self.logger
-            )
-            if process_controller.config.get("autostart", False):
-                process_controller.start()
-            self.processes[program_name].append(process_controller)
+            numprocs = program_config.get("numprocs", 1)
+            if numprocs < 1 or numprocs > 10:
+                self.logger.error(
+                    f"Invalid number of processes for program '{program_name}'"
+                )
+                continue
+            for i in range(numprocs):
+                process_name = f"{program_name}_{i}" if numprocs > 1 else program_name
+                process_controller = ProcessController(
+                    name=process_name, config=program_config, logger=self.logger
+                )
+                if process_controller.config.get("autostart", False):
+                    process_controller.start()
+                self.processes[program_name].append(process_controller)
+
 
     def _start_monitoring(self):
         """Start monitoring all active processes"""
@@ -122,7 +135,11 @@ class ProcessManager:
 
     def reload_configuration(self):
         self.logger.info("Reloading configuration")
-        new_config = Config(self.config_path)
+        try:
+            new_config = Config(self.config_path)
+        except Exception as e:
+            self.logger.error(f"Error while reloading configuration: {e}")
+            return
 
         if not new_config["programs"]:
             self.logger.error("No program found in configuration file")
@@ -131,38 +148,68 @@ class ProcessManager:
             new_program_names = set(new_config["programs"].keys())
         old_program_names = set(self.processes.keys())
 
-        self.remove_old_processes(old_program_names, new_program_names)
-        self.add_new_processes(new_config, new_program_names, old_program_names)
-        self.update_existing_processes(new_config, old_program_names, new_program_names)
+        self.remove_old_config_programs(old_program_names, new_program_names)
+        self.add_new_config_programs(new_config, new_program_names, old_program_names)
+        self.update_existing_programs(new_config, old_program_names, new_program_names)
 
         self.logger.info("Configuration reloaded.")
 
-    def remove_old_processes(self, old_program_names, new_program_names):
+    def remove_old_config_programs(self, old_program_names, new_program_names):
         for program_name in old_program_names - new_program_names:
             self.stop_process(program_name)
             del self.processes[program_name]
 
-    def add_new_processes(self, new_config, new_program_names, old_program_names):
+    def add_new_config_programs(self, new_config, new_program_names, old_program_names):
         for program_name in new_program_names - old_program_names:
             program_config = new_config["programs"][program_name]
-            process_controller = ProcessController(
-                program_name, program_config, self.logger
-            )
-            self.processes[program_name] = [process_controller]
-            process_controller.start()
+            self.processes[program_name] = []
+            for i in range(program_config["numprocs"]):
+                process_name = f"{program_name}_{i}" if program_config["numprocs"] > 1 else program_name
+                process_controller = ProcessController(
+                    name=process_name, config=program_config, logger=self.logger
+                )
+                self.processes[program_name].append(process_controller)
+                process_controller.start()
 
-    def update_existing_processes(
+    def update_existing_programs(
         self, new_config, old_program_names, new_program_names
     ):
         for program_name in old_program_names & new_program_names:
             old_program_config = self.processes[program_name][0].config
             new_program_config = new_config["programs"][program_name]
-
             if self.is_config_different(old_program_config, new_program_config):
                 self.logger.debug(f"Configuration changed for program: {program_name}")
-                self.restart_process(program_name)
-                for process_controller in self.processes[program_name]:
-                    process_controller.config = new_program_config
+                old_program_numprocs = old_program_config["numprocs"]
+                new_program_numprocs = new_program_config["numprocs"]
+                if new_program_numprocs > old_program_numprocs:
+                    # update config for existing processes
+                    for process_controller in self.processes[program_name]:
+                        process_controller.config = new_program_config
+                    self.restart_process(program_name)
+                    # add new processes
+                    for i in range(old_program_numprocs, new_program_numprocs):
+                        process_name = f"{program_name}_{i}"
+                        process_controller = ProcessController(
+                            name=process_name, config=new_program_config, logger=self.logger
+                        )
+                        self.processes[program_name].append(process_controller)
+                        process_controller.start()
+                elif new_program_numprocs < old_program_numprocs:
+                    # update config for existing processes
+                    for i in range(new_program_numprocs):
+                        process_controller = self.processes[program_name][i]
+                        process_controller.config = new_program_config
+                    # stop and remove processes
+                    for i in range(new_program_numprocs, old_program_numprocs):
+                        process_name = f"{program_name}_{i}"
+                        process_controller = self.processes[program_name][i]
+                        process_controller.stop()
+                        del self.processes[program_name][i]
+                    self.restart_process(program_name)
+                else:
+                    for process_controller in self.processes[program_name]:
+                        process_controller.config = new_program_config
+                    self.restart_process(program_name)
 
     def is_config_different(self, old_config, new_config):
         return old_config != new_config

@@ -36,9 +36,6 @@ def parse_args():
         help="Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
     )
     parser.add_argument(
-        "-d", "--daemonize", action="store_true", help="Run Taskmaster in daemon mode"
-    )
-    parser.add_argument(
         "-u", "--user", help="User to run Taskmaster as (requires root)"
     )
     parser.add_argument(

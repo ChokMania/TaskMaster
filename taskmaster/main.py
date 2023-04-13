@@ -28,46 +28,12 @@ def main():
     )
     logger.info("Starting TaskMaster")
 
-    if args.daemonize:
-        if not args.user or not args.group:
-            logger.error(
-                "Both user and group must be specified when running in daemon mode."
-            )
-            return
-
-        try:
-            import daemon
-            from daemon import pidfile
-            from pwd import getpwnam
-            from grp import getgrnam
-        except ImportError:
-            logger.error(
-                "Python 'daemon' package is required to run Taskmaster in daemon mode."
-            )
-            return
-
-        context = daemon.DaemonContext(
-            uid=getpwnam(args.user).pw_uid,
-            gid=getgrnam(args.group).gr_gid,
-            pidfile=pidfile.TimeoutPIDLockFile("taskmaster.pid"),
-            stdout=open(args.logfile, "w+"),
-            stderr=open(args.logfile, "w+"),
-        )
-
-        with context:
-            process_manager = ProcessManager(args.config, logger)
-            process_manager.start_all()
-            control_shell = ControlShell(process_manager, logger)
-            logger.display_cli_prompt_method = control_shell.display_cli_prompt
-            control_shell.cmdloop()
-
-    else:
-        # if args.user and args.group:
-        # drop_privileges(args.user, args.group)
-        process_manager = ProcessManager(args.config, logger)
-        control_shell = ControlShell(process_manager, logger)
-        logger.display_cli_prompt_method = control_shell.display_cli_prompt
-        control_shell.cmdloop()
+    if args.user and args.group:
+        drop_privileges(args.user, args.group)
+    process_manager = ProcessManager(args.config, logger)
+    control_shell = ControlShell(process_manager, logger)
+    logger.display_cli_prompt_method = control_shell.display_cli_prompt
+    control_shell.cmdloop()
 
 
 if __name__ == "__main__":

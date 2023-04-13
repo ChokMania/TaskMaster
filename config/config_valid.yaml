@@ -18,4 +18,22 @@ programs:
     stderr: /tmp/ping.stderr
     env:
       STARTED_BY: taskmaster
-# 143 signal is for docker
+  sleep:
+    cmd: 'sleep 100'
+    numprocs: 4
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 2
+      - 143
+    startretries: 1
+    starttime: 1
+    stopsignal: SIGTERM
+    stoptime: 1
+    stdout: /tmp/sleep.stdout
+    stderr: /tmp/sleep.stderr
+    env:
+      STARTED_BY: taskmaster
