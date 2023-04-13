@@ -13,39 +13,44 @@ class ProcessController:
         self.process = None
         self.stdout = None
         self.stderr = None
-        self.monitoring = False
+        self.active = False
 
     def start(self):
-        try:
-            if self.process and self.process.poll() is None:
-                self.logger.warning(f"Process '{self.name}' is already running")
-                return
+        retries = self.config.get("startretries", 3)
+        for attempt in range(retries):
+            try:
+                if self.process and self.process.poll() is None:
+                    self.logger.warning(f"Process '{self.name}' is already running")
+                    return
 
-            env = os.environ.copy()
-            env.update(self.config.get("env", {}))
+                env = os.environ.copy()
+                env.update(self.config.get("env", {}))
 
-            self.stdout = self._get_output_stream("stdout")
-            self.stderr = self._get_output_stream("stderr")
+                self.stdout = self._get_output_stream("stdout")
+                self.stderr = self._get_output_stream("stderr")
 
-            self.process = subprocess.Popen(
-                self.config["cmd"],
-                shell=True,
-                cwd=self.config.get("workingdir", None),
-                env=env,
-                stdout=self.stdout,
-                stderr=self.stderr,
-            )
-            time.sleep(self.config.get("starttime", 5))
-            if self.process and self.process.poll() is None:
-                self.logger.info(f"Process '{self.name}' started successfully")
-                self.monitoring = True
-            else:
-                self.logger.warning(f"Failed to start process '{self.name}'")
-        except Exception as e:
-            self.logger.warning(f"Failed to start process '{self.name}': {e}")
+                self.process = subprocess.Popen(
+                    self.config["cmd"],
+                    shell=True,
+                    cwd=self.config.get("workingdir", None),
+                    env=env,
+                    stdout=self.stdout,
+                    stderr=self.stderr,
+                )
+                time.sleep(self.config.get("starttime", 5))
+                if self.process and self.process.poll() is None:
+                    self.logger.info(f"Process '{self.name}' started successfully")
+                    self.active = True
+                    break
+                else:
+                    self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
+            except Exception as e:
+                self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
+        if not self.active:
+            self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
 
     def stop(self):
-        self.monitoring = False
+        self.active = False
         if not self.process or self.process.poll() is not None:
             self.logger.warning(f"Process '{self.name}' is not running")
             return

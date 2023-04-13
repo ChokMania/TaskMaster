@@ -1,0 +1,37 @@
+programs:
+  doesntexist:
+    cmd: 'doesntexist'
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 2
+    startretries: 3
+    starttime: 2
+    stopsignal: SIGTERM
+    stoptime: 2
+    stdout: /tmp/doesntexist.stdout
+    stderr: /tmp/doesntexist.stderr
+    env:
+      STARTED_BY: taskmaster
+  ping:
+    cmd: 'ping 8.8.8.8'
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 2
+    startretries: 3
+    starttime: 2
+    stopsignal: SIGTERM
+    stoptime: 2
+    stdout: /tmp/ping.stdout
+    stderr: /tmp/ping.stderr
+    env:
+      STARTED_BY: taskmaster
