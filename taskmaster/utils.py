@@ -5,21 +5,16 @@ import pwd
 import grp
 
 
-def drop_privileges(user, group):
+def drop_privileges(user, group, logger):
     if os.getuid() != 0:
-        print("Ce programme doit être exécuté en tant que root.")
-        sys.exit(1)
+        logger.error("Ce programme doit être exécuté en tant que root.")
     try:
-        # Obtenez l'UID et le GID de l'utilisateur et du groupe spécifiés
         uid = pwd.getpwnam(user).pw_uid
         gid = grp.getgrnam(group).gr_gid
-        # Changez le GID du processus pour celui du groupe spécifié
         os.setgid(gid)
-        # Changez l'UID du processus pour celui de l'utilisateur spécifié
         os.setuid(uid)
     except Exception as e:
-        print(f"Erreur lors de la désescalade des privilèges : {e}")
-        sys.exit(1)
+        logger.error(f"Erreur lors de la désescalade des privilèges : {e}")
 
 
 def parse_args():

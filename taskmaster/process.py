@@ -10,10 +10,14 @@ class ProcessController:
         self.name = name
         self.config = config
         self.logger = logger
+        self.umask = None
         self.process = None
         self.stdout = None
         self.stderr = None
         self.monitor = False
+
+    def initproc(self):
+        os.set_umask(self.umask)
 
     def is_active(self):
         return self.process and self.process.poll() is None
@@ -31,25 +35,30 @@ class ProcessController:
 
                 self.stdout = self._get_output_stream("stdout")
                 self.stderr = self._get_output_stream("stderr")
-
+                self.umask = int(self.config.get("umask", "0022"), 8)
                 self.process = subprocess.Popen(
                     self.config["cmd"],
                     shell=True,
                     cwd=self.config.get("workingdir", None),
                     env=env,
+                    preexec_fn=self.initproc,
                     stdout=self.stdout,
                     stderr=self.stderr,
                 )
-                time.sleep(self.config.get("starttime", 5))
-                if self.is_active():
-                    self.logger.info(f"Process '{self.name}' started successfully")
-                    self.monitor = True
-                    break
+                start_time = time.time()
+                while time.time() - start_time < self.config.get("success_time", 5):
+                    if self.is_active():
+                        self.logger.info(f"Process '{self.name}' started successfully")
+                        self.monitor = True
+                        break
+                    time.sleep(0.5)
+                if not self.is_active():
+                    self.logger.warning(f"Failed to start process '{self.name}'")
                 else:
-                    self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
+                    break
             except Exception as e:
                 self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
-        if self.process.poll() is not None:
+        if not self.is_active():
             self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
 
     def terminate_process(self):
@@ -63,6 +72,7 @@ class ProcessController:
             signal, self.config.get("stopsignal", "SIGTERM"), signal.SIGTERM
         )
         time.sleep(self.config.get("stoptime", 10))
+        ########## ?
         self.process.send_signal(stop_signal)
 
         self.terminate_process()

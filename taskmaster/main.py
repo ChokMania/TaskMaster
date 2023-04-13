@@ -29,7 +29,7 @@ def main():
     logger.info("Starting TaskMaster")
 
     if args.user and args.group:
-        drop_privileges(args.user, args.group)
+        drop_privileges(args.user, args.group, logger)
     process_manager = ProcessManager(args.config, logger)
     control_shell = ControlShell(process_manager, logger)
     logger.display_cli_prompt_method = control_shell.display_cli_prompt
