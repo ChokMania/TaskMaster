@@ -19,6 +19,13 @@ class ControlShell(cmd.Cmd):
         self.stdout.write(self.prompt)
         self.stdout.flush()
 
+    def do_config(self, arg):
+        "Display the config of all processes"
+        if not arg:
+            arg = " ".join(self.process_manager.processes.keys())
+        for process in arg.split():
+            self.process_manager.display_process_config(process)
+
     def do_status(self, arg):
         "Display the status of all processes"
         self.process_manager.status()
@@ -38,7 +45,7 @@ class ControlShell(cmd.Cmd):
 
     def do_reload(self, arg):
         "Reload the configuration file"
-        self.process_manager.reload_config()
+        self.process_manager.reload_configuration()
 
     def do_quit(self, arg):
         "Exit the Taskmaster Control Shell"
@@ -70,21 +77,24 @@ class ControlShell(cmd.Cmd):
 
     def signal_handler(self, signum, frame):
         try:
+            self.logger.warning(
+                    f"\nReceived signal {signum}."
+                )
             if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
                 self.logger.warning(
-                    f"\nReceived signal {signum}. Stopping all processes."
+                    f"Stopping all processes."
                 )
                 self.process_manager.stop_all()
                 self.logger.info("All processes stopped. Exiting.")
                 exit(0)
             elif signum == signal.SIGHUP:
                 self.logger.warning(
-                    f"\nReceived signal {signum}. Reloading configuration and restarting processes."
+                    f"Reloading configuration and restarting processes."
                 )
                 self.process_manager.reload_configuration()
             elif signum == signal.SIGUSR1:
-                self.logger.info(
-                    f"\nReceived signal {signum}. Displaying current process status."
+                self.logger.warning(
+                    f"Displaying current process status."
                 )
                 self.process_manager.status()
             elif signum == signal.SIGUSR2:

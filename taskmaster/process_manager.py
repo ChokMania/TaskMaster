@@ -4,6 +4,7 @@ import time
 from taskmaster.config import Config
 from taskmaster.process import ProcessController
 
+import json
 
 class ProcessManager:
     def __init__(self, config_path, logger):
@@ -13,6 +14,24 @@ class ProcessManager:
         self._monitoring = False
         self._load_configuration()
         self._start_monitoring()
+
+    def _load_configuration(self):
+        config = Config(self.config_path)
+
+        if not config["programs"]:
+            self.logger.error("No program found in configuration file")
+            return
+        for program_name, program_config in config["programs"].items():
+            self.logger.info(f"Loading configuration for program '{program_name}'")
+            if program_name not in self.processes:
+                self.processes[program_name] = []
+
+            process_controller = ProcessController(
+                program_name, program_config, self.logger
+            )
+            if process_controller.config.get("autostart", False):
+                process_controller.start()
+            self.processes[program_name].append(process_controller)
 
     def _start_monitoring(self):
         """Start monitoring all active processes"""
@@ -51,20 +70,14 @@ class ProcessManager:
                             self.logger.redisplay_cli_prompt()
             time.sleep(1)
 
-    def _load_configuration(self):
-        config = Config(self.config_path)
 
-        for program_name, program_config in config["programs"].items():
-            self.logger.info(f"Loading configuration for program '{program_name}'")
-            if program_name not in self.processes:
-                self.processes[program_name] = []
-
-            process_controller = ProcessController(
-                program_name, program_config, self.logger
-            )
-            if process_controller.config.get("autostart", False):
-                process_controller.start()
-            self.processes[program_name].append(process_controller)
+    def display_process_config(self, arg):
+        if arg in self.processes:
+            for process_controller in self.processes[arg]:
+                self.logger.info(f"Process '{arg}':")
+                self.logger.info(json.dumps(process_controller.config, indent=4))
+        else:
+            self.logger.warning(f"Process '{arg}' not found in configuration")
 
     def start_all(self):
         self._monitoring = True
@@ -111,7 +124,11 @@ class ProcessManager:
         self.logger.info("Reloading configuration")
         new_config = Config(self.config_path)
 
-        new_program_names = set(new_config["programs"].keys())
+        if not new_config["programs"]:
+            self.logger.error("No program found in configuration file")
+            new_program_names = set()
+        else:
+            new_program_names = set(new_config["programs"].keys())
         old_program_names = set(self.processes.keys())
 
         self.remove_old_processes(old_program_names, new_program_names)
@@ -151,6 +168,9 @@ class ProcessManager:
         return old_config != new_config
 
     def status(self):
+        if not self.processes.items():
+            self.logger.info("No process configured")
+            return
         for process_name, process_list in self.processes.items():
             self.logger.info(f"Process '{process_name}':")
             for idx, process_controller in enumerate(process_list):
