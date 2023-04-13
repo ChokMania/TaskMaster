@@ -72,27 +72,26 @@ class ControlShell(cmd.Cmd):
         try:
             if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
                 self.logger.warning(
-                    f"Received signal {signum}. Stopping all processes."
+                    f"\nReceived signal {signum}. Stopping all processes."
                 )
                 self.process_manager.stop_all()
                 self.logger.info("All processes stopped. Exiting.")
                 exit(0)
             elif signum == signal.SIGHUP:
                 self.logger.warning(
-                    f"Received signal {signum}. Reloading configuration and restarting processes."
+                    f"\nReceived signal {signum}. Reloading configuration and restarting processes."
                 )
                 self.process_manager.reload_configuration()
             elif signum == signal.SIGUSR1:
                 self.logger.info(
-                    f"Received signal {signum}. Displaying current process status."
+                    f"\nReceived signal {signum}. Displaying current process status."
                 )
                 self.process_manager.status()
             elif signum == signal.SIGUSR2:
                 self.toggle_logging_level()
             elif signum == signal.SIGWINCH:
                 self.handle_terminal_resize()
-            self.stdout.write(self.prompt)
-            self.stdout.flush()
+            self.display_cli_prompt()
         except Exception as e:
             self.logger.error(f"Error while handling signal {signum}: {e}")
 
