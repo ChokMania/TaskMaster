@@ -9,6 +9,7 @@ programs:
     exitcodes:
       - 0
       - 2
+      - 143
     startretries: 3
     starttime: 2
     stopsignal: SIGTERM
@@ -17,3 +18,4 @@ programs:
     stderr: /tmp/ping.stderr
     env:
       STARTED_BY: taskmaster
+# 143 signal is for docker
