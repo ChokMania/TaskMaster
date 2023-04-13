@@ -4,22 +4,29 @@ import os
 
 
 class Logger:
-    _instances = {}
+    display_cli_prompt_method = None
 
+    _instances = {}
     _max_size = 1024 * 1024 * 10  # 10MB
     _backup_count = 5
 
-    def __new__(cls, name, log_file, log_level="INFO", smtp_config=None, syslog_config=None):
+    def __new__(
+        cls, name, log_file, log_level="INFO", smtp_config=None, syslog_config=None
+    ):
         if name not in cls._instances:
             instance = super().__new__(cls)
             instance.logger = logging.getLogger(name)
             instance.logger.setLevel(log_level)
 
-            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
 
             if log_file:
                 os.makedirs(os.path.dirname(log_file), exist_ok=True)
-                file_handler = RotatingFileHandler(log_file, maxBytes=cls._max_size, backupCount=cls._backup_count)
+                file_handler = RotatingFileHandler(
+                    log_file, maxBytes=cls._max_size, backupCount=cls._backup_count
+                )
                 file_handler.setFormatter(formatter)
                 instance.logger.addHandler(file_handler)
 
@@ -47,29 +54,39 @@ class Logger:
             cls._instances[name] = instance
         return cls._instances[name]
 
-    def log(self, message, level=logging.INFO):
-        print(message)
+    def log(self, message, level=logging.INFO, display_cli_prompt=False):
+        self.display_on_cli(message, display_cli_prompt)
         self.logger.log(level, message)
 
-    def debug(self, message):
-        print(message)
+    def debug(self, message, display_cli_prompt=False):
+        self.display_on_cli(message, display_cli_prompt)
         self.logger.debug(message)
 
-    def info(self, message):
-        print(message)
+    def info(self, message, display_cli_prompt=False):
+        self.display_on_cli(message, display_cli_prompt)
         self.logger.info(message)
 
-    def warning(self, message):
-        print(message)
+    def warning(self, message, display_cli_prompt=False):
+        self.display_on_cli(message, display_cli_prompt)
         self.logger.warning(message)
 
-    def error(self, message):
-        print(message)
+    def error(self, message, display_cli_prompt=False):
+        self.display_on_cli(message, display_cli_prompt)
         self.logger.error(message)
 
-    def critical(self, message):
+    def redisplay_cli_prompt(self):
+        if self.display_cli_prompt_method is not None:
+            self.display_cli_prompt_method()
+
+    def display_on_cli(self, message, display_cli_prompt=False):
         print(message)
+        if display_cli_prompt:
+            self.redisplay_cli_prompt()
+
+    def critical(self, message, display_cli_prompt=False):
+        self.display_on_cli(message, display_cli_prompt)
         self.logger.critical(message)
+
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")

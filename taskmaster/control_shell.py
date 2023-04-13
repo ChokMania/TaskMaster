@@ -2,9 +2,11 @@ import cmd
 import signal
 import logging
 from taskmaster.logger import Logger
+from taskmaster.process_manager import ProcessManager
+
 
 class ControlShell(cmd.Cmd):
-    intro = "Taskmaster Control Shell. Type help or ? to list commands.\n"
+    intro = "\nTaskmaster Control Shell. Type help or ? to list commands.\n"
     prompt = "(taskmaster) "
 
     def __init__(self, process_manager, logger: Logger):
@@ -12,6 +14,10 @@ class ControlShell(cmd.Cmd):
         self.logger = logger
         self.process_manager = process_manager
         self.setup_signal_handlers()
+
+    def display_cli_prompt(self):
+        self.stdout.write(self.prompt)
+        self.stdout.flush()
 
     def do_status(self, arg):
         "Display the status of all processes"
@@ -63,23 +69,32 @@ class ControlShell(cmd.Cmd):
         signal.signal(signal.SIGUSR2, self.signal_handler)
 
     def signal_handler(self, signum, frame):
-        if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-            self.logger.warning(f"Received signal {signum}. Stopping all processes.")
-            self.process_manager.stop_all()
-            self.logger.info("All processes stopped. Exiting.")
-            exit(0)
-        elif signum == signal.SIGHUP:
-            self.logger.warning(f"Received signal {signum}. Reloading configuration and restarting processes.")
-            self.process_manager.reload_configuration()
-        elif signum == signal.SIGUSR1:
-            self.logger.info(f"Received signal {signum}. Displaying current process status.")
-            self.process_manager.status()
-        elif signum == signal.SIGUSR2:
-            self.toggle_logging_level()
-        elif signum == signal.SIGWINCH:
-            self.handle_terminal_resize()
-        self.stdout.write(self.prompt)
-        self.stdout.flush()
+        try:
+            if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
+                self.logger.warning(
+                    f"Received signal {signum}. Stopping all processes."
+                )
+                self.process_manager.stop_all()
+                self.logger.info("All processes stopped. Exiting.")
+                exit(0)
+            elif signum == signal.SIGHUP:
+                self.logger.warning(
+                    f"Received signal {signum}. Reloading configuration and restarting processes."
+                )
+                self.process_manager.reload_configuration()
+            elif signum == signal.SIGUSR1:
+                self.logger.info(
+                    f"Received signal {signum}. Displaying current process status."
+                )
+                self.process_manager.status()
+            elif signum == signal.SIGUSR2:
+                self.toggle_logging_level()
+            elif signum == signal.SIGWINCH:
+                self.handle_terminal_resize()
+            self.stdout.write(self.prompt)
+            self.stdout.flush()
+        except Exception as e:
+            self.logger.error(f"Error while handling signal {signum}: {e}")
 
     def toggle_logging_level(self):
         current_level = self.logger.logger.getEffectiveLevel()

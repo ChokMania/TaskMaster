@@ -10,10 +10,10 @@ programs:
       - 0
       - 2
     startretries: 3
-    starttime: 5
+    starttime: 2
     stopsignal: SIGTERM
-    stoptime: 10
+    stoptime: 2
     stdout: /tmp/ping.stdout
-    stderr: /tmp/poimng.stderr
+    stderr: /tmp/ping.stderr
     env:
       STARTED_BY: taskmaster

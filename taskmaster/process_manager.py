@@ -1,5 +1,5 @@
-from taskmaster.config import Config
-from taskmaster.process import ProcessController
+import threading
+import time
 
 from taskmaster.config import Config
 from taskmaster.process import ProcessController
@@ -10,36 +10,76 @@ class ProcessManager:
         self.config_path = config_path
         self.logger = logger
         self.processes = {}
-        self.load_configuration()
+        self._monitoring = False
+        self._load_configuration()
+        self._start_monitoring()
 
-    def load_configuration(self):
+    def _start_monitoring(self):
+        """Start monitoring all active processes"""
+        self._monitoring = True
+        self.logger.info(f"Starting monitoring")
+        self.monitor_thread = threading.Thread(target=self._monitor)
+        self.monitor_thread.start()
+
+    def _monitor(self):
+        while self._monitoring is True:
+            for process_list in self.processes.values():
+                for process_controller in process_list:
+                    return_code = process_controller.process.poll()
+                    if return_code is not None:
+                        autorestart = process_controller.config.get(
+                            "autorestart", "unexpected"
+                        )
+                        exitcodes = process_controller.config.get("exitcodes", [0])
+                        process_name = process_controller.name
+                        if autorestart == "always" or (
+                            autorestart == "unexpected" and return_code not in exitcodes
+                        ):
+                            self.logger.info(
+                                f"\nProcess '{process_name}' exited with code {return_code}. Restarting...",
+                            )
+                            process_controller.restart()
+                            self.logger.redisplay_cli_prompt()
+                        else:
+                            self.logger.info(
+                                f"\nProcess '{process_name}' exited with code {return_code}. Not restarting.",
+                                display_cli_prompt=True,
+                            )
+            time.sleep(1)
+
+    def _load_configuration(self):
         config = Config(self.config_path)
 
-        for program_name, program_config in config['programs'].items():
-            self.logger.debug(f"Loading configuration for program: {program_name}")
+        for program_name, program_config in config["programs"].items():
+            self.logger.info(f"Loading configuration for program '{program_name}'")
             if program_name not in self.processes:
                 self.processes[program_name] = []
 
-
-            process_controller = ProcessController(program_name, program_config, self.logger)
+            process_controller = ProcessController(
+                program_name, program_config, self.logger
+            )
             if process_controller.config.get("autostart", False):
                 process_controller.start()
             self.processes[program_name].append(process_controller)
 
     def start_all(self):
+        self._monitoring = True
         for process_list in self.processes.values():
             for process_controller in process_list:
                 process_controller.start()
 
     def stop_all(self):
+        self._monitoring = False
         for process_list in self.processes.values():
             for process_controller in process_list:
                 process_controller.stop()
 
     def restart_all(self):
+        self._monitoring = False
         for process_list in self.processes.values():
             for process_controller in process_list:
                 process_controller.restart()
+        self._monitoring = True
 
     def start_process(self, process_name):
         if process_name in self.processes:
@@ -66,7 +106,7 @@ class ProcessManager:
         self.logger.info("Reloading configuration")
         new_config = Config(self.config_path)
 
-        new_program_names = set(new_config['programs'].keys())
+        new_program_names = set(new_config["programs"].keys())
         old_program_names = set(self.processes.keys())
 
         self.remove_old_processes(old_program_names, new_program_names)
@@ -82,15 +122,19 @@ class ProcessManager:
 
     def add_new_processes(self, new_config, new_program_names, old_program_names):
         for program_name in new_program_names - old_program_names:
-            program_config = new_config['programs'][program_name]
-            process_controller = ProcessController(program_name, program_config, self.logger)
+            program_config = new_config["programs"][program_name]
+            process_controller = ProcessController(
+                program_name, program_config, self.logger
+            )
             self.processes[program_name] = [process_controller]
             process_controller.start()
 
-    def update_existing_processes(self, new_config, old_program_names, new_program_names):
+    def update_existing_processes(
+        self, new_config, old_program_names, new_program_names
+    ):
         for program_name in old_program_names & new_program_names:
             old_program_config = self.processes[program_name][0].config
-            new_program_config = new_config['programs'][program_name]
+            new_program_config = new_config["programs"][program_name]
 
             if self.is_config_different(old_program_config, new_program_config):
                 self.logger.debug(f"Configuration changed for program: {program_name}")
@@ -117,6 +161,7 @@ class ProcessManager:
 
     def detach_process(self, process_name):
         raise NotImplementedError
+
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")

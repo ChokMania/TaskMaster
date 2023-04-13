@@ -4,6 +4,7 @@ import signal
 import time
 import threading
 
+
 class ProcessController:
     def __init__(self, name, config, logger):
         self.name = name
@@ -13,13 +14,6 @@ class ProcessController:
         self.stdout = None
         self.stderr = None
         self.monitoring = False
-        self.monitor_thread = None
-
-    def _start_monitoring(self):
-        self.logger.info("Starting monitoring")
-        self.monitoring = True
-        self.monitor_thread = threading.Thread(target=self.monitor)
-        self.monitor_thread.start()
 
     def start(self):
         try:
@@ -43,37 +37,22 @@ class ProcessController:
             )
             time.sleep(self.config.get("starttime", 5))
             if self.process and self.process.poll() is None:
-                self._start_monitoring()
+                self.logger.info(f"Process '{self.name}' started successfully")
+                self.monitoring = True
             else:
                 self.logger.warning(f"Failed to start process '{self.name}'")
         except Exception as e:
-            self.logger.info(f"Failed to start process '{self.name}': {e}")
-
-    def monitor(self):
-        while self.monitoring is True:
-            return_code = self.process.poll()
-            if return_code is not None:
-                self.handle_exit(return_code)
-                break
-            time.sleep(1)
-
-    def handle_exit(self, return_code):
-        autorestart = self.config.get("autorestart", "unexpected")
-        exitcodes = self.config.get("exitcodes", [0])
-
-        if autorestart == "always" or (autorestart == "unexpected" and return_code not in exitcodes):
-            self.logger.warning(f"Process '{self.name}' exited with code {return_code}. Restarting...")
-            self.start()
-        else:
-            self.logger.info(f"Process '{self.name}' exited with code {return_code}. Not restarting.")
+            self.logger.warning(f"Failed to start process '{self.name}': {e}")
 
     def stop(self):
+        self.monitoring = False
         if not self.process or self.process.poll() is not None:
             self.logger.warning(f"Process '{self.name}' is not running")
             return
 
-        self.monitoring = False
-        stop_signal = getattr(signal, self.config.get('stopsignal', 'SIGTERM') , signal.SIGTERM)
+        stop_signal = getattr(
+            signal, self.config.get("stopsignal", "SIGTERM"), signal.SIGTERM
+        )
         time.sleep(self.config.get("stoptime", 10))
         self.process.send_signal(stop_signal)
 
@@ -130,6 +109,7 @@ class ProcessController:
             self.stdout.close()
         if self.stderr:
             self.stderr.close()
+
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")
