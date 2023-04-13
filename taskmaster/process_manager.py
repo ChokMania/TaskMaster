@@ -25,7 +25,7 @@ class ProcessManager:
         while self._monitoring is True:
             for process_list in self.processes.values():
                 for process_controller in process_list:
-                    if process_controller.active is False:
+                    if process_controller.monitor is False:
                         continue
                     return_code = process_controller.process.poll()
                     if return_code is not None:

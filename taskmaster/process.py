@@ -13,7 +13,7 @@ class ProcessController:
         self.process = None
         self.stdout = None
         self.stderr = None
-        self.active = False
+        self.monitor = False
 
     def start(self):
         retries = self.config.get("startretries", 3)
@@ -40,17 +40,17 @@ class ProcessController:
                 time.sleep(self.config.get("starttime", 5))
                 if self.process and self.process.poll() is None:
                     self.logger.info(f"Process '{self.name}' started successfully")
-                    self.active = True
+                    self.monitor = True
                     break
                 else:
                     self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
             except Exception as e:
                 self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
-        if not self.active:
+        if self.process.poll() is not None:
             self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
 
     def stop(self):
-        self.active = False
+        self.monitor = False
         if not self.process or self.process.poll() is not None:
             self.logger.warning(f"Process '{self.name}' is not running")
             return
