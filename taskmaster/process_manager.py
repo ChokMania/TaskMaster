@@ -44,9 +44,11 @@ class ProcessManager:
                             self.logger.redisplay_cli_prompt()
                         else:
                             self.logger.info(
-                                f"\nProcess '{process_name}' exited with code {return_code}. Not restarting.",
-                                display_cli_prompt=True,
+                                f"\nProcess '{process_name}' exited with code {return_code}. stopping.",
                             )
+                            process_controller.monitor = False
+                            process_controller.terminate_process()
+                            self.logger.redisplay_cli_prompt()
             time.sleep(1)
 
     def _load_configuration(self):
@@ -74,7 +76,8 @@ class ProcessManager:
         self._monitoring = False
         for process_list in self.processes.values():
             for process_controller in process_list:
-                process_controller.stop()
+                if process_controller.is_active():
+                    process_controller.stop()
 
     def restart_all(self):
         self._monitoring = False

@@ -15,11 +15,14 @@ class ProcessController:
         self.stderr = None
         self.monitor = False
 
+    def is_active(self):
+        return self.process and self.process.poll() is None
+
     def start(self):
         retries = self.config.get("startretries", 3)
         for attempt in range(retries):
             try:
-                if self.process and self.process.poll() is None:
+                if self.is_active():
                     self.logger.warning(f"Process '{self.name}' is already running")
                     return
 
@@ -38,7 +41,7 @@ class ProcessController:
                     stderr=self.stderr,
                 )
                 time.sleep(self.config.get("starttime", 5))
-                if self.process and self.process.poll() is None:
+                if self.is_active():
                     self.logger.info(f"Process '{self.name}' started successfully")
                     self.monitor = True
                     break
@@ -49,23 +52,20 @@ class ProcessController:
         if self.process.poll() is not None:
             self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
 
-    def stop(self):
+    def terminate_process(self):
         self.monitor = False
-        if not self.process or self.process.poll() is not None:
-            self.logger.warning(f"Process '{self.name}' is not running")
-            return
+        self.process.terminate()
+        self._close_output_streams()
+        self.logger.info(f"Process '{self.name}' terminated successfully")
 
+    def stop(self):
         stop_signal = getattr(
             signal, self.config.get("stopsignal", "SIGTERM"), signal.SIGTERM
         )
         time.sleep(self.config.get("stoptime", 10))
         self.process.send_signal(stop_signal)
 
-        if self.process.poll() is None:
-            self.process.terminate()
-
-        self._close_output_streams()
-        self.logger.info(f"Stopped process '{self.name}'")
+        self.terminate_process()
 
     def restart(self):
         self.stop()
