@@ -19,6 +19,20 @@ install-deps:
 install-deps-dev:
 	pip install -e ."[dev]"
 
+docker-build:
+	docker build -t taskmaster-image-v1.0 ./docker/.
+
+docker-run:
+	docker run -it --name taskmaster-container-1 -v `pwd`:/shared -p 81:81 -p 80:80 taskmaster-image-v1.0
+
+docker-exec:
+	docker exec -it taskmaster-container-1 bash
+
+docker-start:
+	docker start taskmaster-container-1
+
+docker-all: docker-build docker-run
+
 kill-usr1:
 	@kill -USR1 `ps -x | grep "taskmaster" | grep -v "grep" | awk '{print $$1}'`
 
