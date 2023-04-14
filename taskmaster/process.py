@@ -2,8 +2,6 @@ import os
 import subprocess
 import signal
 import time
-import stat
-import logging
 
 class ProcessController:
     def __init__(self, name, config, logger):
@@ -19,6 +17,7 @@ class ProcessController:
     def _initproc(self):
         try:
             os.umask(self.umask)
+            os.close(0)  # Close stdin, for program like cat for example
         except Exception as e:
             self.logger.warning(f"Failed to set umask for process '{self.name}': {e}")
 

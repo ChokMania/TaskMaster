@@ -1,0 +1,40 @@
+programs:
+  catstdin:
+    cmd: 'cat'
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 1
+      - 2
+      - 143
+    startretries: 1
+    starttime: 1
+    stopsignal: SIGTERM
+    stoptime: 1
+    stdout: /tmp/catstdin.stdout
+    stderr: /tmp/catstdin.stderr
+    env:
+      STARTED_BY: taskmaster
+  catfile:
+    cmd: 'cat ~/.vimrc'
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 2
+      - 143
+    startretries: 1
+    starttime: 1
+    stopsignal: SIGTERM
+    stoptime: 1
+    stdout: /tmp/catfile.stdout
+    stderr: /tmp/catfile.stderr
+    env:
+      STARTED_BY: taskmaster
