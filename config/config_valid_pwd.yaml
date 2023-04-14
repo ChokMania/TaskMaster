@@ -1,0 +1,38 @@
+programs:
+  pwdtmp:
+    cmd: 'pwd'
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 2
+      - 143
+    startretries: 1
+    starttime: 1
+    stopsignal: SIGTERM
+    stoptime: 1
+    stdout: /tmp/pwdtmp.stdout
+    stderr: /tmp/pwdtmp.stderr
+    env:
+      STARTED_BY: taskmaster
+  pwdcurrentdir:
+    cmd: 'pwd'
+    numprocs: 1
+    umask: 022
+    autostart: true
+    autorestart: never
+    exitcodes:
+      - 0
+      - 2
+      - 143
+    startretries: 1
+    starttime: 1
+    stopsignal: SIGTERM
+    stoptime: 1
+    stdout: /tmp/pwdcurrentdir.stdout
+    stderr: /tmp/pwdcurrentdir.stderr
+    env:
+      STARTED_BY: taskmaster

@@ -1,0 +1,20 @@
+programs:
+  lstmp:
+    cmd: 'ls'
+    numprocs: 1
+    umask: 022
+    workingdir: /tmp
+    autostart: true
+    autorestart: unexpected
+    exitcodes:
+      - 0
+      - 2
+      - 143
+    startretries: 1
+    starttime: 1
+    stopsignal: SIGTERM
+    stoptime: 1
+    stdout: /tmp/lstmp.stdout
+    stderr: /tmp/lstmp.stderr
+    env:
+      STARTED_BY: taskmaster

@@ -49,7 +49,7 @@ class ProcessController:
                     stderr=self.stderr,
                 )
                 time.sleep(self.config.get("starttime", 5)) # TODO: Find better impl
-                if self.is_active():
+                if self.process.poll() in self.config.get("exitcodes", [0]) or self.is_active():
                     self.logger.info(f"Process '{self.name}' started successfully")
                     self.monitor = True
                     break
@@ -57,7 +57,7 @@ class ProcessController:
                     self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
             except Exception as e:
                 self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
-        if self.process.poll() is not None:
+        if self.process.poll() not in self.config.get("exitcodes", [0]) and not self.is_active():
             self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
 
     def terminate_process(self):

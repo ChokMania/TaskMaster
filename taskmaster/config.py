@@ -63,6 +63,7 @@ class Config:
             program.setdefault("starttime", 3)
             program.setdefault("stdout", f"/tmp/{program_name}.stdout")
             program.setdefault("stderr", f"/tmp/{program_name}.stderr")
+            program.setdefault("workingdir", None)
 
             program.setdefault("exitcodes", [0, 2, 143])
             program.setdefault("env", {})
