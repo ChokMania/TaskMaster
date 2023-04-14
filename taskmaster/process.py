@@ -35,30 +35,25 @@ class ProcessController:
 
                 self.stdout = self._get_output_stream("stdout")
                 self.stderr = self._get_output_stream("stderr")
-                self.umask = int(self.config.get("umask", "0022"), 8)
+
                 self.process = subprocess.Popen(
                     self.config["cmd"],
                     shell=True,
                     cwd=self.config.get("workingdir", None),
                     env=env,
-                    preexec_fn=self.initproc,
                     stdout=self.stdout,
                     stderr=self.stderr,
                 )
-                start_time = time.time()
-                while time.time() - start_time < self.config.get("success_time", 5):
-                    if self.is_active():
-                        self.logger.info(f"Process '{self.name}' started successfully")
-                        self.monitor = True
-                        break
-                    time.sleep(0.5)
-                if not self.is_active():
-                    self.logger.warning(f"Failed to start process '{self.name}'")
-                else:
+                time.sleep(self.config.get("starttime", 5)) # TODO: Find better impl
+                if self.is_active():
+                    self.logger.info(f"Process '{self.name}' started successfully")
+                    self.monitor = True
                     break
+                else:
+                    self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
             except Exception as e:
                 self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
-        if not self.is_active():
+        if self.process.poll() is not None:
             self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
 
     def terminate_process(self):
@@ -72,7 +67,6 @@ class ProcessController:
             signal, self.config.get("stopsignal", "SIGTERM"), signal.SIGTERM
         )
         time.sleep(self.config.get("stoptime", 10))
-        ########## ?
         self.process.send_signal(stop_signal)
 
         self.terminate_process()
