@@ -20,16 +20,14 @@ programs:
       STARTED_BY: taskmaster
   sleep:
     cmd: 'sleep 100'
-    numprocs: 4
+    numprocs: 1
     umask: 022
     workingdir: /tmp
     autostart: true
     autorestart: unexpected
     exitcodes:
-      - 0
-      - 2
-      - 143
-    startretries: 1
+      - 218
+    startretries: 2
     starttime: 1
     stopsignal: SIGTERM
     stoptime: 1

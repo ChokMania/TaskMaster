@@ -46,6 +46,7 @@ class ProcessManager:
                 self.processes[program_name].append(process_controller)
 
 
+
     def _start_monitoring(self):
         """Start monitoring all active processes"""
         self._monitoring = True
@@ -195,16 +196,15 @@ class ProcessManager:
                         self.processes[program_name].append(process_controller)
                         process_controller.start()
                 elif new_program_numprocs < old_program_numprocs:
+                    # stop and remove processes
+                    for i in range(old_program_numprocs, new_program_numprocs, -1):
+                        process_controller = self.processes[program_name][i -1]
+                        process_controller.stop()
+                        del self.processes[program_name][i-1]
                     # update config for existing processes
                     for i in range(new_program_numprocs):
                         process_controller = self.processes[program_name][i]
                         process_controller.config = new_program_config
-                    # stop and remove processes
-                    for i in range(new_program_numprocs, old_program_numprocs):
-                        process_name = f"{program_name}_{i}"
-                        process_controller = self.processes[program_name][i]
-                        process_controller.stop()
-                        del self.processes[program_name][i]
                     self.restart_process(program_name)
                 else:
                     for process_controller in self.processes[program_name]:
