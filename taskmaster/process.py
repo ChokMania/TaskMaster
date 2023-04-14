@@ -2,8 +2,8 @@ import os
 import subprocess
 import signal
 import time
-import threading
-
+import stat
+import logging
 
 class ProcessController:
     def __init__(self, name, config, logger):
@@ -16,8 +16,11 @@ class ProcessController:
         self.stderr = None
         self.monitor = False
 
-    def initproc(self):
-        os.set_umask(self.umask)
+    def _initproc(self):
+        try:
+            os.umask(self.umask)
+        except Exception as e:
+            self.logger.warning(f"Failed to set umask for process '{self.name}': {e}")
 
     def is_active(self):
         return self.process and self.process.poll() is None
@@ -35,12 +38,13 @@ class ProcessController:
 
                 self.stdout = self._get_output_stream("stdout")
                 self.stderr = self._get_output_stream("stderr")
-
+                self.umask = self.config.get("umask", "022")
                 self.process = subprocess.Popen(
-                    self.config["cmd"],
+                    self.config['cmd'],
                     shell=True,
                     cwd=self.config.get("workingdir", None),
                     env=env,
+                    preexec_fn=self._initproc,
                     stdout=self.stdout,
                     stderr=self.stderr,
                 )
