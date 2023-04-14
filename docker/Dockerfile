@@ -2,7 +2,7 @@ FROM debian:11
 
 RUN apt-get update && \
     apt-get install -y vim git man-db bc procps rsyslog \
-    inetutils-ping \
+    inetutils-ping nginx \
     python3 python3-pip python3-venv && \
     echo "postfix postfix/mailname string taskmaster.com" | debconf-set-selections && \
     echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
