@@ -31,3 +31,4 @@ taskmaster_metrics.log
 
 # Fichiers de configuration de l'environnement virtuel
 venv
+.taskmaster_history

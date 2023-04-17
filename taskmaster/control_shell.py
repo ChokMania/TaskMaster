@@ -2,8 +2,9 @@ import cmd
 import signal
 import logging
 from taskmaster.logger import Logger
-from taskmaster.process_manager import ProcessManager
-
+import readline
+import atexit
+import os
 
 class ControlShell(cmd.Cmd):
     intro = "\nTaskmaster Control Shell. Type help or ? to list commands.\n"
@@ -14,10 +15,33 @@ class ControlShell(cmd.Cmd):
         self.logger = logger
         self.process_manager = process_manager
         self.setup_signal_handlers()
+        self.setup_history()
+
+    def setup_history(self):
+        history_file = ".taskmaster_history"
+        try:
+            readline.read_history_file(history_file)
+        except FileNotFoundError:
+            pass
+        atexit.register(self.save_history, history_file)
+
+    def save_history(self, history_file):
+        readline.write_history_file(history_file)
 
     def display_cli_prompt(self):
         self.stdout.write(self.prompt)
         self.stdout.flush()
+
+
+    def do_history(self, arg):
+        "Display the command history"
+        num_commands = readline.get_current_history_length()
+        if num_commands == 0:
+            print("No command history available.")
+        else:
+            print("Command history:")
+            for i in range(num_commands):
+                print(f"{i + 1}: {readline.get_history_item(i + 1)}")
 
     def do_config(self, arg):
         "Display the config of all processes"

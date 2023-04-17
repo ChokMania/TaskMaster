@@ -13,7 +13,7 @@ programs:
     startretries: 3
     starttime: 2
     stopsignal: SIGTERM
-    stoptime: 2
+    stoptime: 0.00000001
     stdout: /tmp/ping.stdout
     stderr: /tmp/ping.stderr
     env:

@@ -14,16 +14,13 @@ VOLUME /shared
 COPY .bashrc /root/
 COPY .vimrc /root/
 COPY mynginx.conf /etc/nginx/conf.d/
-COPY 000-default.conf /etc/apache2/sites-available/
 COPY nginx.html /var/www/html
-COPY apache.html /var/www/html
 
 
 # Port forwarding
-EXPOSE 81
 EXPOSE 80
 
-CMD service rsyslog start ; service postfix start ; service apache2 stop ; service nginx stop ; bash
+CMD service rsyslog start ; service postfix start ;  service nginx stop ; bash
 
 
 # Build the container image with:
