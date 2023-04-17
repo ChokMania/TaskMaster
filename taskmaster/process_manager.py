@@ -235,9 +235,6 @@ class ProcessManager:
         else:
             self.logger.warning(f"Process '{process_name}' not found in configuration")
 
-    def detach_process(self, process_name):
-        raise NotImplementedError
-
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")

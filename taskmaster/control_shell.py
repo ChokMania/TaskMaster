@@ -62,10 +62,6 @@ class ControlShell(cmd.Cmd):
         "Attach to a running process: ATTACH <process name>"
         self.process_manager.attach_process(arg)
 
-    def do_detach(self, arg):
-        "Detach from a running process: DETACH <process name>"
-        self.process_manager.detach_process(arg)
-
     def setup_signal_handlers(self):
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGABRT, self.signal_handler)
