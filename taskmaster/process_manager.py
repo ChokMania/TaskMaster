@@ -134,10 +134,14 @@ class ProcessManager:
         else:
             self.logger.warning(f"Process '{process_name}' not found in configuration")
 
-    def reload_configuration(self):
+    def reload_configuration(self, arg=None):
         self.logger.info("Reloading configuration")
         try:
-            new_config = Config(self.config_path)
+            if arg and arg.split()[0]:
+                new_config = Config(arg.split()[0])
+                self.config_path = arg.split()[0]
+            else:
+                new_config = Config(self.config_path)
         except Exception as e:
             self.logger.error(f"Error while reloading configuration: {e}")
             return

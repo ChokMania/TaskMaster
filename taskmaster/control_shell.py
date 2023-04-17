@@ -45,7 +45,7 @@ class ControlShell(cmd.Cmd):
 
     def do_reload(self, arg):
         "Reload the configuration file"
-        self.process_manager.reload_configuration()
+        self.process_manager.reload_configuration(arg)
 
     def do_quit(self, arg):
         "Exit the Taskmaster Control Shell"
