@@ -50,8 +50,12 @@ class ControlShell(cmd.Cmd):
     def do_quit(self, arg):
         "Exit the Taskmaster Control Shell"
         self.process_manager.stop_all()
-        print("Exiting Taskmaster Control Shell")
+        self.logger.info("Exiting Taskmaster Control Shell")
         return True
+
+    def do_exit(self, arg):
+        "Exit the Taskmaster Control Shell"
+        return self.do_quit(arg)
 
     def do_EOF(self, arg):
         "Exit the Taskmaster Control Shell using Ctrl-D"
@@ -60,6 +64,9 @@ class ControlShell(cmd.Cmd):
 
     def do_attach(self, arg):
         "Attach to a running process: ATTACH <process name>"
+        if not arg:
+            self.logger.warning("Please provide a process name")
+            return
         self.process_manager.attach_process(arg)
 
     def setup_signal_handlers(self):

@@ -112,7 +112,13 @@ class ProcessController:
     def _get_output_stream(self, stream_type):
         output_path = self.config.get(stream_type, None)
         if output_path:
-            return open(output_path, "a")
+            if os.path.dirname(output_path) and not os.path.exists(os.path.dirname(output_path)):
+                os.makedirs(os.path.dirname(output_path))
+            try:
+                return open(output_path, "a")
+            except Exception as e:
+                self.logger.warning(f"Failed to open {stream_type} file '{output_path}': {e}")
+                return subprocess.DEVNULL
         else:
             return subprocess.DEVNULL
 

@@ -215,6 +215,13 @@ class ProcessManager:
                         process_controller.config = new_program_config
                     self.restart_process(program_name)
 
+    def attach_process(self, process_name):
+        if process_name in self.processes:
+            for process_controller in self.processes[process_name]:
+                process_controller.attach()
+        else:
+            self.logger.warning(f"Process '{process_name}' not found in configuration")
+
     def is_config_different(self, old_config, new_config):
         return old_config != new_config
 
@@ -226,14 +233,7 @@ class ProcessManager:
             self.logger.info(f"Process '{process_name}':")
             for idx, process_controller in enumerate(process_list):
                 status = process_controller.status()
-                self.logger.info(f"  Instance {idx}: {status}")
-
-    def attach_process(self, process_name):
-        if process_name in self.processes:
-            for process_controller in self.processes[process_name]:
-                process_controller.attach()
-        else:
-            self.logger.warning(f"Process '{process_name}' not found in configuration")
+                self.logger.info(f"  {process_controller.name}: {status}")
 
 
 if __name__ == "__main__":
