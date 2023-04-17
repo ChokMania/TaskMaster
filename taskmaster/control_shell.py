@@ -62,13 +62,6 @@ class ControlShell(cmd.Cmd):
         self.logger.warning(f"Received signal EOF. Stopping all processes.")
         return self.do_quit(arg)
 
-    def do_attach(self, arg):
-        "Attach to a running process: ATTACH <process name>"
-        if not arg:
-            self.logger.warning("Please provide a process name")
-            return
-        self.process_manager.attach_process(arg)
-
     def setup_signal_handlers(self):
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGABRT, self.signal_handler)
