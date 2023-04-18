@@ -1,8 +1,8 @@
 import threading
 import time
 
-from taskmaster.config import Config
-from taskmaster.process import ProcessController
+from server.config import Config
+from server.process import ProcessController
 
 import json
 
@@ -238,12 +238,15 @@ class ProcessManager:
                 if 0 <= instance_number < len(self.processes[process_name]):
                     self.processes[process_name][instance_number].attach()
                 else:
-                    self.logger.warning(f"Instance {instance_number} not found for process '{process_name}'")
+                    self.logger.warning(
+                        f"Instance {instance_number} not found for process '{process_name}'"
+                    )
             else:
                 for process_controller in self.processes[process_name]:
                     process_controller.attach()
         else:
             self.logger.warning(f"Process '{process_name}' not found in configuration")
+
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")

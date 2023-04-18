@@ -1,7 +1,7 @@
 programs:
   ping:
     cmd: 'ping 8.8.8.8'
-    numprocs: 2
+    numprocs: 1
     umask: 022
     workingdir: /tmp
     autostart: true
@@ -13,27 +13,24 @@ programs:
     startretries: 3
     starttime: 1
     stopsignal: SIGTERM
-    stoptime: 1
+    stoptime: 3
     stdout: /tmp/ping.stdout
     stderr: /tmp/ping.stderr
     env:
       STARTED_BY: taskmaster
   sleep:
     cmd: 'sleep 1000'
-    numprocs: 2
+    numprocs: 1
     umask: 022
     workingdir: /tmp
     autostart: true
     autorestart: unexpected
     exitcodes:
-      - 218
-      - 0
-      - 2
     startretries: 2
     starttime: 1
     stopsignal: SIGTERM
-    stoptime: 1
-    stdout: /tmp/sleep.stdout
+    stoptime: 3
+    stdout: /sdfkopsekpf/feowkfoewkfkoew.stdout
     stderr: /tmp/sleep.stderr
     env:
       STARTED_BY: taskmaster

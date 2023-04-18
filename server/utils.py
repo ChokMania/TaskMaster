@@ -23,7 +23,7 @@ def parse_args():
         "-c", "--config", required=True, help="Path to the configuration file"
     )
     parser.add_argument(
-        "-l", "--logfile", default="./taskmaster.log", help="Path to the log file"
+        "-l", "--logfile", default="/var/log/taskmaster/taskmaster.log", help="Path to the log file"
     )
     parser.add_argument(
         "--log-level",
@@ -42,10 +42,30 @@ def parse_args():
         help="Path to the SMTP configuration file (JSON format)",
     )
     parser.add_argument(
+        "--server-addr",
+        default="localhost",
+        help="Address to bind the daemon server to (default: localhost)",
+    )
+    parser.add_argument(
+        "--server-port",
+        type=int,
+        default=9001,
+        help="Port to bind the daemon server to (default: 9001)",
+    )
+    parser.add_argument(
         "--syslog-config",
         default="./config/syslog.json",
         help="Path to the Syslog configuration file (JSON format)",
     )
+    parser.add_argument("--daemon", dest="server", action="store_true", help="Run as a server")
+    parser.add_argument("--server", action="store_true", help="Run as a server")
+    parser.add_argument(
+        "--pidfile",
+        type=str,
+        default="/var/run/taskmaster.pid",
+        help="Path to the PID file",
+    )
+
     return parser.parse_args()
 
 

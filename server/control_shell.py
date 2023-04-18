@@ -1,22 +1,62 @@
 import cmd
 import signal
 import logging
-from taskmaster.logger import Logger
+from server.logger import Logger
 import readline
 import atexit
-import os
-
+import sys
+import io
 
 class ControlShell(cmd.Cmd):
     intro = "\nTaskmaster Control Shell. Type help or ? to list commands.\n"
     prompt = "(taskmaster) "
 
-    def __init__(self, process_manager, logger: Logger):
+    def __init__(self, process_manager, logger: Logger, server=None):
         super(ControlShell, self).__init__()
         self.logger = logger
+        self.server = server
         self.process_manager = process_manager
         self.setup_signal_handlers()
         self.setup_history()
+
+    def onecmd(self, line):
+        if self.server is not None:
+            # Redirect stdout to a StringIO object
+            old_stdout = sys.stdout
+            sys.stdout = io.StringIO()
+
+            super().onecmd(line)
+
+            # Get the output from StringIO and restore stdout
+            output = sys.stdout.getvalue()
+            sys.stdout = old_stdout
+            if line.strip().lower().startswith("help"):
+                command = line.split(" ")[1] if len(line.split(" ")) > 1 else None
+                output = self.get_help_text(topic=command)
+
+            self.logger.info(f"{output}")
+
+            return output if output.strip() != "" else "Command executed successfully."
+        else:
+            return super().onecmd(line)
+
+    def get_help_text(self, topic=None):
+        if topic is None:
+            help_text = "Documented commands (type help <topic>):\n"
+            help_text += "========================================\n"
+
+            commands = []
+            for method_name in dir(self):
+                if method_name.startswith("do_") and method_name != "do_help":
+                    command_name = method_name[3:]
+                    commands.append(command_name)
+
+            help_text += ' '.join(commands) + '\n'
+            return help_text
+        else:
+            for method_name in dir(self):
+                if method_name == "do_" + topic:
+                    return getattr(self, method_name).__doc__
 
     def setup_history(self):
         history_file = ".taskmaster_history"
@@ -44,7 +84,12 @@ class ControlShell(cmd.Cmd):
                 print(f"{i + 1}: {readline.get_history_item(i + 1)}")
 
     def do_attach(self, arg):
-        "Attach to a process: ATTACH <process name> [instance_number]"
+        "Attach to a process (not available in server): ATTACH <process_name> <instance_number>"
+        if self.server is not None:
+            self.logger.error(
+                "Cannot attach to a process when TaskMaster is running in server mode."
+            )
+            return
         args = arg.split()
         if len(args) == 0:
             self.logger.error("No process name provided.")
@@ -76,10 +121,18 @@ class ControlShell(cmd.Cmd):
         "Start a process: START <process name>"
         self.process_manager.start_process(arg)
 
+    def do_startall(self, arg):
+        "Start all processes"
+        self.process_manager.start_all()
+
     def do_stop(self, arg):
         "Stop a process: STOP <process name>"
         self.logger.error("Stopping process..")
         self.process_manager.stop_process(arg)
+
+    def do_stopall(self, arg):
+        "Stop all processes"
+        self.process_manager.stop_all()
 
     def do_restart(self, arg):
         "Restart a process: RESTART <process name>"
@@ -93,6 +146,8 @@ class ControlShell(cmd.Cmd):
         "Exit the Taskmaster Control Shell"
         self.process_manager.stop_all()
         self.logger.info("Exiting Taskmaster Control Shell")
+        if self.server is not None:
+            self.server.stop()
         return True
 
     def do_exit(self, arg):
