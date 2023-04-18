@@ -1,8 +1,8 @@
 import threading
 import time
 
-from taskmaster.config import Config
-from taskmaster.process import ProcessController
+from server.config import Config
+from server.process import ProcessController
 
 import json
 

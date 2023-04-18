@@ -1,7 +1,7 @@
 import cmd
 import signal
 import logging
-from taskmaster.logger import Logger
+from server.logger import Logger
 import readline
 import atexit
 import os

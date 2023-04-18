@@ -26,7 +26,14 @@ setup(
     url="https://github.com/ChokMania/TaskMaster",
     packages=find_packages(),
     entry_points={
-        "console_scripts": ["taskmaster = taskmaster.main:main"],
+        "console_scripts": [
+            "taskmaster = server.server:main",
+            "tm = server.server:main",
+            "tm_server = server.server:main",
+            "taskmaster_server = server.server:main",
+            "taskmaster_client = client.client:main",
+            "tm_client = client.client:main",
+        ],
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
