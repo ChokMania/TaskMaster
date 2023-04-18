@@ -1,6 +1,6 @@
 # Taskmaster
 
-Taskmaster is a process control system that provides an interface for managing and monitoring processes. It is built in Python and allows you to easily manage multiple processes using a configuration file.
+Taskmaster is a process control system that provides an interface for managing and monitoring processes. It is built in Python and allows you to easily manage multiple processes using a configuration file. Taskmaster can be used in both client-server mode or standalone mode.
 
 ## Getting Started
 
@@ -10,11 +10,34 @@ To get started with Taskmaster, you'll need to first clone the repository:
 git clone https://github.com/ChokMania/taskmaster.git
 ```
 
-Once you have the repository cloned, you can run the program by running the main.py file:
+Once you have the repository cloned, navigate to the project directory and install the package using `pip`:
 
 ```bash
-python main.py
+cd taskmaster
+pip install ."[dev]"
 ```
+
+Now, you can run the Taskmaster using the entry points.
+
+run standalone taskmaster:
+
+```bash
+taskmaster_server -c path/to/config
+```
+
+run in server mode:
+
+```bash
+taskmaster_server -c path/to/config --server
+```
+
+run the client:
+
+```bash
+taskmaster_client
+```
+
+You can check the Makefile for a lot of usefull commands.
 
 ## Configuration
 
