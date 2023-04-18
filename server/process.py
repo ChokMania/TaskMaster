@@ -55,9 +55,12 @@ class ProcessController:
                 self.stdout = self._get_output_stream("stdout")
                 self.stderr = self._get_output_stream("stderr")
                 self.umask = self.config.get("umask", "022")
+
+                cmd_list = shlex.split(self.config["cmd"])
+
                 self.process = subprocess.Popen(
-                    self.config["cmd"],
-                    shell=True,
+                    cmd_list,
+                    shell=False,
                     cwd=self.config.get("workingdir", None),
                     env=env,
                     preexec_fn=self._initproc,
@@ -88,20 +91,27 @@ class ProcessController:
                 f"Failed to start process '{self.name}' after {retries} attempts"
             )
 
-    def terminate_process(self):
-        self.monitor = False
-        self.process.terminate()
-        self._close_output_streams()
-        self.logger.info(f"Process '{self.name}' terminated successfully")
-
     def stop(self):
         stop_signal = getattr(
             signal, self.config.get("stopsignal", "SIGTERM"), signal.SIGTERM
         )
-        time.sleep(self.config.get("stoptime", 10))
+        self.monitor = False
+        timeout = self.config.get("stoptime", 10)
         self.process.send_signal(stop_signal)
-
-        self.terminate_process()
+        for _ in range(timeout):
+            if self.process.poll() is not None:
+                break
+            time.sleep(1)
+        else:
+            # If the process didn't terminate within the timeout, send SIGKILL signal
+            self.logger.warning(f"Process '{self.name}' did not stop within the timeout, sending SIGKILL")
+            try:
+                self.process.send_signal(signal.SIGKILL)
+            except Exception as e:
+                self.logger.error(f"Error while killing process '{self.name}': {e}")
+        self.process.terminate()
+        self._close_output_streams()
+        self.logger.info(f"Process '{self.name}' terminated successfully")
 
     def restart(self):
         self.stop()

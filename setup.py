@@ -27,10 +27,10 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "taskmaster = server.server:main",
-            "tm = server.server:main",
-            "tm_server = server.server:main",
-            "taskmaster_server = server.server:main",
+            "taskmaster = server.main:main",
+            "tm = server.main:main",
+            "tm_server = server.main:main",
+            "taskmaster_server = server.main:main",
             "taskmaster_client = client.client:main",
             "tm_client = client.client:main",
         ],

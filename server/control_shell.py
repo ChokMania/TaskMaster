@@ -4,19 +4,37 @@ import logging
 from server.logger import Logger
 import readline
 import atexit
-import os
-
+import sys
+import io
 
 class ControlShell(cmd.Cmd):
     intro = "\nTaskmaster Control Shell. Type help or ? to list commands.\n"
     prompt = "(taskmaster) "
 
-    def __init__(self, process_manager, logger: Logger):
+    def __init__(self, process_manager, logger: Logger, daemonised=False):
         super(ControlShell, self).__init__()
         self.logger = logger
+        self.daemonised = daemonised
         self.process_manager = process_manager
         self.setup_signal_handlers()
         self.setup_history()
+
+    def onecmd(self, line):
+        if self.daemonised:
+            # Redirect stdout to a StringIO object
+            old_stdout = sys.stdout
+            sys.stdout = io.StringIO()
+
+            # Call the superclass method
+            super().onecmd(line)
+
+            # Get the output from StringIO and restore stdout
+            output = sys.stdout.getvalue()
+            sys.stdout = old_stdout
+
+            return output
+        else:
+            return super().onecmd(line)
 
     def setup_history(self):
         history_file = ".taskmaster_history"
@@ -76,10 +94,18 @@ class ControlShell(cmd.Cmd):
         "Start a process: START <process name>"
         self.process_manager.start_process(arg)
 
+    def do_startall(self, arg):
+        "Start all processes"
+        self.process_manager.start_all()
+
     def do_stop(self, arg):
         "Stop a process: STOP <process name>"
         self.logger.error("Stopping process..")
         self.process_manager.stop_process(arg)
+
+    def do_stopall(self, arg):
+        "Stop all processes"
+        self.process_manager.stop_all()
 
     def do_restart(self, arg):
         "Restart a process: RESTART <process name>"
