@@ -31,8 +31,8 @@ setup(
             "tm = server.main:main",
             "tm_server = server.main:main",
             "taskmaster_server = server.main:main",
-            "taskmaster_client = client.client:main",
-            "tm_client = client.client:main",
+            "taskmaster_client = client.client:client",
+            "tm_client = client.client:client",
         ],
     },
     classifiers=[

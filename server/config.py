@@ -2,6 +2,7 @@ import yaml
 import os
 import signal
 
+
 class Config:
     def __init__(self, config_path):
         self.config_path = config_path
@@ -79,27 +80,46 @@ class Config:
                 raise ValueError(
                     "The 'startretries' field must be an integer greater than 0"
                 )
-            if not isinstance(program["starttime"], int) or not (1 <= program["starttime"] <= 60):
-                raise ValueError("The 'starttime' field must be an integer between 1 and 60 seconds")
-            if not isinstance(program["stoptime"], int) or not (1 <= program["stoptime"] <= 60):
-                raise ValueError("The 'stoptime' field must be an integer between 1 and 60 seconds")
-            if program["exitcodes"] is not None and not isinstance(program["exitcodes"], list):
+            if not isinstance(program["starttime"], int) or not (
+                1 <= program["starttime"] <= 60
+            ):
+                raise ValueError(
+                    "The 'starttime' field must be an integer between 1 and 60 seconds"
+                )
+            if not isinstance(program["stoptime"], int) or not (
+                1 <= program["stoptime"] <= 60
+            ):
+                raise ValueError(
+                    "The 'stoptime' field must be an integer between 1 and 60 seconds"
+                )
+            if program["exitcodes"] is not None and not isinstance(
+                program["exitcodes"], list
+            ):
                 raise ValueError("The 'exitcodes' field must be a list of integers")
 
             # Validate workingdir
             workingdir = program["workingdir"]
             if not os.path.isdir(workingdir):
-                raise ValueError(f"Invalid working directory '{workingdir}' for program '{program_name}'")
+                raise ValueError(
+                    f"Invalid working directory '{workingdir}' for program '{program_name}'"
+                )
 
             # Validate stopsignal
             stopsignal = program["stopsignal"]
             if not hasattr(signal, stopsignal) and not (1 <= int(stopsignal) <= 31):
-                raise ValueError(f"Invalid stop signal '{stopsignal}' for program '{program_name}'")
+                raise ValueError(
+                    f"Invalid stop signal '{stopsignal}' for program '{program_name}'"
+                )
 
             # Validate env
             env = program["env"]
-            if not all(isinstance(key, str) and isinstance(value, str) for key, value in env.items()):
-                raise ValueError(f"Invalid environment variables for program '{program_name}', keys and values must be strings")
+            if not all(
+                isinstance(key, str) and isinstance(value, str)
+                for key, value in env.items()
+            ):
+                raise ValueError(
+                    f"Invalid environment variables for program '{program_name}', keys and values must be strings"
+                )
 
             # Validate auto restart values
             autorestart_values = ["never", "always", "unexpected"]
@@ -124,7 +144,9 @@ class Config:
             exitcodes = program["exitcodes"]
             if exitcodes is not None:
                 if not all(self.is_valid_exitcode(exitcode) for exitcode in exitcodes):
-                    raise ValueError(f"Invalid exit codes '{exitcodes}' for program '{program_name}', exit codes must be integers between 0 and 255")
+                    raise ValueError(
+                        f"Invalid exit codes '{exitcodes}' for program '{program_name}', exit codes must be integers between 0 and 255"
+                    )
             else:
                 program["exitcodes"] = []
 

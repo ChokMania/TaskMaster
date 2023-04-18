@@ -4,6 +4,7 @@ import signal
 import time
 import shlex
 
+
 class ProcessController:
     def __init__(self, name, config, logger):
         self.name = name
@@ -27,10 +28,10 @@ class ProcessController:
 
     def attach(self):
         if not self.is_active():
-                self.logger.warning(f"Process '{self.name}' is not running")
-                return
+            self.logger.warning(f"Process '{self.name}' is not running")
+            return
         try:
-            stdout_path = self.config['stdout']
+            stdout_path = self.config["stdout"]
             command = f"tail -f {stdout_path}"
             tail_process = subprocess.Popen(shlex.split(command))
             # Wait for the user to press Enter
@@ -84,6 +85,7 @@ class ProcessController:
                     f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}"
                 )
         if (
+            self.process and
             self.process.poll() not in self.config.get("exitcodes", [0])
             and not self.is_active()
         ):
@@ -104,7 +106,9 @@ class ProcessController:
             time.sleep(1)
         else:
             # If the process didn't terminate within the timeout, send SIGKILL signal
-            self.logger.warning(f"Process '{self.name}' did not stop within the timeout, sending SIGKILL")
+            self.logger.warning(
+                f"Process '{self.name}' did not stop within the timeout, sending SIGKILL"
+            )
             try:
                 self.process.send_signal(signal.SIGKILL)
             except Exception as e:

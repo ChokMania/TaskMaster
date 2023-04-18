@@ -11,6 +11,7 @@ from server.logger import Logger
 from server.utils import parse_args, drop_privileges
 from server.server import TaskMasterServer
 
+
 def main():
     process_manager = None
     try:
@@ -29,6 +30,12 @@ def main():
             with open(args.syslog_config, "r") as f:
                 syslog_config = json.load(f)
 
+        # Create the log file directory if it doesn't exist
+        if os.path.dirname(args.logfile) and not os.path.exists(
+            os.path.dirname(args.logfile)
+        ):
+            os.makedirs(os.path.dirname(args.logfile))
+
         logger = Logger(
             "TaskMaster",
             log_file=args.logfile,
@@ -37,19 +44,15 @@ def main():
             syslog_config=syslog_config,
         )
         logger.info("Starting TaskMaster")
-
         if args.user and args.group:
             drop_privileges(args.user, args.group, logger)
 
         if args.daemon:
             logger.info("Starting TaskMaster as a daemon")
-            log_path = "/var/log/taskmaster/taskmaster.log"  # Change this path to a suitable location
-            if os.path.dirname(log_path) and not os.path.exists(
-                os.path.dirname(log_path)
-            ):
-                os.makedirs(os.path.dirname(log_path))
-            with open(log_path, "a") as log_file:
-                logger.info(f"Redirecting stdout and stderr to log file 'taskmaster.log' in {log_path}")
+            with open(args.logfile, "a") as log_file:
+                logger.info(
+                    f"Redirecting stdout and stderr to log file 'taskmaster.log' in {args.logfile}"
+                )
                 # Close all handlers before entering daemon context
                 for handler in logger.logger.handlers:
                     handler.close()
@@ -58,14 +61,19 @@ def main():
                 context = daemon.DaemonContext(
                     pidfile=pidfile.TimeoutPIDLockFile(args.pidfile),
                     stdout=log_file,
-                    stderr=log_file
+                    stderr=log_file,
                 )
 
                 with context:
                     # Re-initialize the logger with the new log file
                     logger.info("Starting server")
                     process_manager = ProcessManager(args.config, logger)
-                    server = TaskMasterServer(process_manager, logger)
+                    server = TaskMasterServer(
+                        process_manager=process_manager,
+                        logger=logger,
+                        host=args.server_addr,
+                        port=args.server_port,
+                    )
                     server.start()
 
         else:

@@ -2,6 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler, SysLogHandler
 import os
 
+
 class Logger:
     display_cli_prompt_method = None
 
@@ -12,11 +13,11 @@ class Logger:
     # ANSI color codes
     COLORS = {
         "DEBUG": "\033[33m",  # Yellow
-        "INFO": "\033[37m",   # White
+        "INFO": "\033[37m",  # White
         "WARNING": "\033[35m",  # Purple
         "ERROR": "\033[31m",  # Red
         "CRITICAL": "\033[31m",  # Red
-        "RESET": "\033[0m"  # Reset
+        "RESET": "\033[0m",  # Reset
     }
 
     def __new__(

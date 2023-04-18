@@ -11,16 +11,16 @@ class ControlShell(cmd.Cmd):
     intro = "\nTaskmaster Control Shell. Type help or ? to list commands.\n"
     prompt = "(taskmaster) "
 
-    def __init__(self, process_manager, logger: Logger, daemonised=False):
+    def __init__(self, process_manager, logger: Logger, server=None):
         super(ControlShell, self).__init__()
         self.logger = logger
-        self.daemonised = daemonised
+        self.server = server
         self.process_manager = process_manager
         self.setup_signal_handlers()
         self.setup_history()
 
     def onecmd(self, line):
-        if self.daemonised:
+        if self.server is not None:
             # Redirect stdout to a StringIO object
             old_stdout = sys.stdout
             sys.stdout = io.StringIO()
@@ -32,7 +32,7 @@ class ControlShell(cmd.Cmd):
             output = sys.stdout.getvalue()
             sys.stdout = old_stdout
 
-            return output
+            return output if output.strip() != "" else "Command executed successfully."
         else:
             return super().onecmd(line)
 
@@ -63,6 +63,11 @@ class ControlShell(cmd.Cmd):
 
     def do_attach(self, arg):
         "Attach to a process: ATTACH <process name> [instance_number]"
+        if self.server is not None:
+            self.logger.error(
+                "Cannot attach to a process when TaskMaster is running in server mode."
+            )
+            return
         args = arg.split()
         if len(args) == 0:
             self.logger.error("No process name provided.")
@@ -119,6 +124,8 @@ class ControlShell(cmd.Cmd):
         "Exit the Taskmaster Control Shell"
         self.process_manager.stop_all()
         self.logger.info("Exiting Taskmaster Control Shell")
+        if self.server is not None:
+            self.server.stop()
         return True
 
     def do_exit(self, arg):
