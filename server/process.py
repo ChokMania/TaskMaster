@@ -93,6 +93,11 @@ class ProcessController:
                 f"Failed to start process '{self.name}' after {retries} attempts"
             )
 
+    def terminate_process(self):
+        self.process.terminate()
+        self._close_output_streams()
+        self.logger.info(f"Process '{self.name}' terminated successfully")
+
     def stop(self):
         stop_signal = getattr(
             signal, self.config.get("stopsignal", "SIGTERM"), signal.SIGTERM
@@ -113,9 +118,8 @@ class ProcessController:
                 self.process.send_signal(signal.SIGKILL)
             except Exception as e:
                 self.logger.error(f"Error while killing process '{self.name}': {e}")
-        self.process.terminate()
-        self._close_output_streams()
-        self.logger.info(f"Process '{self.name}' terminated successfully")
+        self.terminate_process()
+
 
     def restart(self):
         self.stop()
