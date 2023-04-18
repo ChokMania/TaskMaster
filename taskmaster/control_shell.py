@@ -2,7 +2,9 @@ import cmd
 import signal
 import logging
 from taskmaster.logger import Logger
-from taskmaster.process_manager import ProcessManager
+import readline
+import atexit
+import os
 
 
 class ControlShell(cmd.Cmd):
@@ -14,10 +16,50 @@ class ControlShell(cmd.Cmd):
         self.logger = logger
         self.process_manager = process_manager
         self.setup_signal_handlers()
+        self.setup_history()
+
+    def setup_history(self):
+        history_file = ".taskmaster_history"
+        try:
+            readline.read_history_file(history_file)
+        except FileNotFoundError:
+            pass
+        atexit.register(self.save_history, history_file)
+
+    def save_history(self, history_file):
+        readline.write_history_file(history_file)
 
     def display_cli_prompt(self):
         self.stdout.write(self.prompt)
         self.stdout.flush()
+
+    def do_history(self, arg):
+        "Display the command history"
+        num_commands = readline.get_current_history_length()
+        if num_commands == 0:
+            print("No command history available.")
+        else:
+            print("Command history:")
+            for i in range(num_commands):
+                print(f"{i + 1}: {readline.get_history_item(i + 1)}")
+
+    def do_attach(self, arg):
+        "Attach to a process: ATTACH <process name> [instance_number]"
+        args = arg.split()
+        if len(args) == 0:
+            self.logger.error("No process name provided.")
+            return
+
+        process_name = args[0]
+        instance_number = None
+        if len(args) > 1:
+            try:
+                instance_number = int(args[1])
+            except ValueError:
+                self.logger.error("Invalid instance number provided.")
+                return
+
+        self.process_manager.attach_instance(process_name, instance_number)
 
     def do_config(self, arg):
         "Display the config of all processes"
@@ -50,21 +92,17 @@ class ControlShell(cmd.Cmd):
     def do_quit(self, arg):
         "Exit the Taskmaster Control Shell"
         self.process_manager.stop_all()
-        print("Exiting Taskmaster Control Shell")
+        self.logger.info("Exiting Taskmaster Control Shell")
         return True
+
+    def do_exit(self, arg):
+        "Exit the Taskmaster Control Shell"
+        return self.do_quit(arg)
 
     def do_EOF(self, arg):
         "Exit the Taskmaster Control Shell using Ctrl-D"
         self.logger.warning(f"Received signal EOF. Stopping all processes.")
         return self.do_quit(arg)
-
-    def do_attach(self, arg):
-        "Attach to a running process: ATTACH <process name>"
-        self.process_manager.attach_process(arg)
-
-    def do_detach(self, arg):
-        "Detach from a running process: DETACH <process name>"
-        self.process_manager.detach_process(arg)
 
     def setup_signal_handlers(self):
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -77,13 +115,9 @@ class ControlShell(cmd.Cmd):
 
     def signal_handler(self, signum, frame):
         try:
-            self.logger.warning(
-                    f"\nReceived signal {signum}."
-                )
+            self.logger.warning(f"\nReceived signal {signum}.")
             if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-                self.logger.warning(
-                    f"Stopping all processes."
-                )
+                self.logger.warning(f"Stopping all processes.")
                 self.process_manager.stop_all()
                 self.logger.info("All processes stopped. Exiting.")
                 exit(0)
@@ -93,9 +127,7 @@ class ControlShell(cmd.Cmd):
                 )
                 self.process_manager.reload_configuration()
             elif signum == signal.SIGUSR1:
-                self.logger.warning(
-                    f"Displaying current process status."
-                )
+                self.logger.warning(f"Displaying current process status.")
                 self.process_manager.status()
             elif signum == signal.SIGUSR2:
                 self.toggle_logging_level()
@@ -111,7 +143,6 @@ class ControlShell(cmd.Cmd):
         else:
             self.logger.logger.setLevel(logging.INFO)
             self.logger.info("Switched logging level to INFO.")
-
 
 
 if __name__ == "__main__":

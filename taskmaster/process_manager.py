@@ -6,6 +6,7 @@ from taskmaster.process import ProcessController
 
 import json
 
+
 class ProcessManager:
     def __init__(self, config_path, logger):
         self.config_path = config_path
@@ -45,8 +46,6 @@ class ProcessManager:
                     process_controller.start()
                 self.processes[program_name].append(process_controller)
 
-
-
     def _start_monitoring(self):
         """Start monitoring all active processes"""
         self._monitoring = True
@@ -83,7 +82,6 @@ class ProcessManager:
                             process_controller.terminate_process()
                             self.logger.redisplay_cli_prompt()
             time.sleep(1)
-
 
     def display_process_config(self, arg):
         if arg in self.processes:
@@ -169,7 +167,11 @@ class ProcessManager:
             program_config = new_config["programs"][program_name]
             self.processes[program_name] = []
             for i in range(program_config["numprocs"]):
-                process_name = f"{program_name}_{i}" if program_config["numprocs"] > 1 else program_name
+                process_name = (
+                    f"{program_name}_{i}"
+                    if program_config["numprocs"] > 1
+                    else program_name
+                )
                 process_controller = ProcessController(
                     name=process_name, config=program_config, logger=self.logger
                 )
@@ -195,16 +197,18 @@ class ProcessManager:
                     for i in range(old_program_numprocs, new_program_numprocs):
                         process_name = f"{program_name}_{i}"
                         process_controller = ProcessController(
-                            name=process_name, config=new_program_config, logger=self.logger
+                            name=process_name,
+                            config=new_program_config,
+                            logger=self.logger,
                         )
                         self.processes[program_name].append(process_controller)
                         process_controller.start()
                 elif new_program_numprocs < old_program_numprocs:
                     # stop and remove processes
                     for i in range(old_program_numprocs, new_program_numprocs, -1):
-                        process_controller = self.processes[program_name][i -1]
+                        process_controller = self.processes[program_name][i - 1]
                         process_controller.stop()
-                        del self.processes[program_name][i-1]
+                        del self.processes[program_name][i - 1]
                     # update config for existing processes
                     for i in range(new_program_numprocs):
                         process_controller = self.processes[program_name][i]
@@ -226,18 +230,20 @@ class ProcessManager:
             self.logger.info(f"Process '{process_name}':")
             for idx, process_controller in enumerate(process_list):
                 status = process_controller.status()
-                self.logger.info(f"  Instance {idx}: {status}")
+                self.logger.info(f"  {process_controller.name}: {status}")
 
-    def attach_process(self, process_name):
+    def attach_instance(self, process_name, instance_number=None):
         if process_name in self.processes:
-            for process_controller in self.processes[process_name]:
-                process_controller.attach()
+            if instance_number is not None:
+                if 0 <= instance_number < len(self.processes[process_name]):
+                    self.processes[process_name][instance_number].attach()
+                else:
+                    self.logger.warning(f"Instance {instance_number} not found for process '{process_name}'")
+            else:
+                for process_controller in self.processes[process_name]:
+                    process_controller.attach()
         else:
             self.logger.warning(f"Process '{process_name}' not found in configuration")
-
-    def detach_process(self, process_name):
-        raise NotImplementedError
-
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")

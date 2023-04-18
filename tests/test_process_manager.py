@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from taskmaster.process_manager import ProcessManager
 from taskmaster.logger import Logger
 
+
 class TestProcessManager(unittest.TestCase):
     def setUp(self):
         self.config_path = "path/to/test_config.yml"
@@ -29,5 +30,6 @@ class TestProcessManager(unittest.TestCase):
         self.process_manager.restart_all()
         self.process_manager.restart_all.assert_called_once()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

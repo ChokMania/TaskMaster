@@ -2,6 +2,7 @@ import os
 import subprocess
 import signal
 import time
+import shlex
 
 class ProcessController:
     def __init__(self, name, config, logger):
@@ -24,6 +25,22 @@ class ProcessController:
     def is_active(self):
         return self.process and self.process.poll() is None
 
+    def attach(self):
+        if not self.is_active():
+                self.logger.warning(f"Process '{self.name}' is not running")
+                return
+        try:
+            stdout_path = self.config['stdout']
+            command = f"tail -f {stdout_path}"
+            tail_process = subprocess.Popen(shlex.split(command))
+            # Wait for the user to press Enter
+            input("Press Enter to detach from the process...\n")
+
+            # Terminate the tail -f process
+            tail_process.terminate()
+        except Exception as e:
+            self.logger.error(f"Failed to attach to process '{self.name}': {e}")
+
     def start(self):
         retries = self.config.get("startretries", 3)
         for attempt in range(retries):
@@ -39,7 +56,7 @@ class ProcessController:
                 self.stderr = self._get_output_stream("stderr")
                 self.umask = self.config.get("umask", "022")
                 self.process = subprocess.Popen(
-                    self.config['cmd'],
+                    self.config["cmd"],
                     shell=True,
                     cwd=self.config.get("workingdir", None),
                     env=env,
@@ -47,17 +64,29 @@ class ProcessController:
                     stdout=self.stdout,
                     stderr=self.stderr,
                 )
-                time.sleep(self.config.get("starttime", 5)) # TODO: Find better impl
-                if self.process.poll() in self.config.get("exitcodes", [0]) or self.is_active():
+                time.sleep(self.config.get("starttime", 5))  # TODO: Find better impl
+                if (
+                    self.process.poll() in self.config.get("exitcodes", [0])
+                    or self.is_active()
+                ):
                     self.logger.info(f"Process '{self.name}' started successfully")
                     self.monitor = True
                     break
                 else:
-                    self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
+                    self.logger.warning(
+                        f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}"
+                    )
             except Exception as e:
-                self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
-        if self.process.poll() not in self.config.get("exitcodes", [0]) and not self.is_active():
-            self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
+                self.logger.warning(
+                    f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}"
+                )
+        if (
+            self.process.poll() not in self.config.get("exitcodes", [0])
+            and not self.is_active()
+        ):
+            self.logger.error(
+                f"Failed to start process '{self.name}' after {retries} attempts"
+            )
 
     def terminate_process(self):
         self.monitor = False
@@ -90,29 +119,20 @@ class ProcessController:
         else:
             return "stopped"
 
-    def attach(self):
-        if not self.process or self.process.poll() is not None:
-            self.logger.warning(f"Process '{self.name}' is not running")
-            return
-        self.logger.info(f"Attaching to process '{self.name}'")
-        try:
-            env = os.environ.copy()
-            env.update(self.config.get("env", {}))
-
-            child = subprocess.Popen(
-                self.config["cmd"],
-                shell=True,
-                cwd=self.config.get("workingdir", None),
-                env=env,
-            )
-            child.communicate()
-        except Exception as e:
-            self.logger.warning(f"Error attaching to process '{{self.name}}': {e}")
-
     def _get_output_stream(self, stream_type):
         output_path = self.config.get(stream_type, None)
         if output_path:
-            return open(output_path, "a")
+            if os.path.dirname(output_path) and not os.path.exists(
+                os.path.dirname(output_path)
+            ):
+                os.makedirs(os.path.dirname(output_path))
+            try:
+                return open(output_path, "a")
+            except Exception as e:
+                self.logger.warning(
+                    f"Failed to open {stream_type} file '{output_path}': {e}"
+                )
+                return subprocess.DEVNULL
         else:
             return subprocess.DEVNULL
 

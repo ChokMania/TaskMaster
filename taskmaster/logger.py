@@ -2,13 +2,22 @@ import logging
 from logging.handlers import RotatingFileHandler, SMTPHandler, SysLogHandler
 import os
 
-
 class Logger:
     display_cli_prompt_method = None
 
     _instances = {}
     _max_size = 1024 * 1024 * 10  # 10MB
     _backup_count = 5
+
+    # ANSI color codes
+    COLORS = {
+        "DEBUG": "\033[33m",  # Yellow
+        "INFO": "\033[37m",   # White
+        "WARNING": "\033[35m",  # Purple
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[31m",  # Red
+        "RESET": "\033[0m"  # Reset
+    }
 
     def __new__(
         cls, name, log_file, log_level="INFO", smtp_config=None, syslog_config=None
@@ -55,36 +64,37 @@ class Logger:
         return cls._instances[name]
 
     def log(self, message, level=logging.INFO, display_cli_prompt=False):
-        self.display_on_cli(message, display_cli_prompt)
+        self.display_on_cli(message, level, display_cli_prompt)
         self.logger.log(level, message)
 
     def debug(self, message, display_cli_prompt=False):
-        self.display_on_cli(message, display_cli_prompt)
+        self.display_on_cli(message, logging.DEBUG, display_cli_prompt)
         self.logger.debug(message)
 
     def info(self, message, display_cli_prompt=False):
-        self.display_on_cli(message, display_cli_prompt)
+        self.display_on_cli(message, logging.INFO, display_cli_prompt)
         self.logger.info(message)
 
     def warning(self, message, display_cli_prompt=False):
-        self.display_on_cli(message, display_cli_prompt)
+        self.display_on_cli(message, logging.WARNING, display_cli_prompt)
         self.logger.warning(message)
 
     def error(self, message, display_cli_prompt=False):
-        self.display_on_cli(message, display_cli_prompt)
+        self.display_on_cli(message, logging.ERROR, display_cli_prompt)
         self.logger.error(message)
 
     def redisplay_cli_prompt(self):
         if self.display_cli_prompt_method is not None:
             self.display_cli_prompt_method()
 
-    def display_on_cli(self, message, display_cli_prompt=False):
-        print(message)
+    def display_on_cli(self, message, level, display_cli_prompt=False):
+        color = self.COLORS.get(logging.getLevelName(level), "")
+        print(color + message + self.COLORS["RESET"])
         if display_cli_prompt:
             self.redisplay_cli_prompt()
 
     def critical(self, message, display_cli_prompt=False):
-        self.display_on_cli(message, display_cli_prompt)
+        self.display_on_cli(message, logging.CRITICAL, display_cli_prompt)
         self.logger.critical(message)
 
 
