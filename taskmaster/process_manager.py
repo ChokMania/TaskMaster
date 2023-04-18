@@ -6,6 +6,7 @@ from taskmaster.process import ProcessController
 
 import json
 
+
 class ProcessManager:
     def __init__(self, config_path, logger):
         self.config_path = config_path
@@ -45,8 +46,6 @@ class ProcessManager:
                     process_controller.start()
                 self.processes[program_name].append(process_controller)
 
-
-
     def _start_monitoring(self):
         """Start monitoring all active processes"""
         self._monitoring = True
@@ -83,7 +82,6 @@ class ProcessManager:
                             process_controller.terminate_process()
                             self.logger.redisplay_cli_prompt()
             time.sleep(1)
-
 
     def display_process_config(self, arg):
         if arg in self.processes:
@@ -169,7 +167,11 @@ class ProcessManager:
             program_config = new_config["programs"][program_name]
             self.processes[program_name] = []
             for i in range(program_config["numprocs"]):
-                process_name = f"{program_name}_{i}" if program_config["numprocs"] > 1 else program_name
+                process_name = (
+                    f"{program_name}_{i}"
+                    if program_config["numprocs"] > 1
+                    else program_name
+                )
                 process_controller = ProcessController(
                     name=process_name, config=program_config, logger=self.logger
                 )
@@ -195,16 +197,18 @@ class ProcessManager:
                     for i in range(old_program_numprocs, new_program_numprocs):
                         process_name = f"{program_name}_{i}"
                         process_controller = ProcessController(
-                            name=process_name, config=new_program_config, logger=self.logger
+                            name=process_name,
+                            config=new_program_config,
+                            logger=self.logger,
                         )
                         self.processes[program_name].append(process_controller)
                         process_controller.start()
                 elif new_program_numprocs < old_program_numprocs:
                     # stop and remove processes
                     for i in range(old_program_numprocs, new_program_numprocs, -1):
-                        process_controller = self.processes[program_name][i -1]
+                        process_controller = self.processes[program_name][i - 1]
                         process_controller.stop()
-                        del self.processes[program_name][i-1]
+                        del self.processes[program_name][i - 1]
                     # update config for existing processes
                     for i in range(new_program_numprocs):
                         process_controller = self.processes[program_name][i]

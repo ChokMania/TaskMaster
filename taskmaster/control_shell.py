@@ -6,6 +6,7 @@ import readline
 import atexit
 import os
 
+
 class ControlShell(cmd.Cmd):
     intro = "\nTaskmaster Control Shell. Type help or ? to list commands.\n"
     prompt = "(taskmaster) "
@@ -31,7 +32,6 @@ class ControlShell(cmd.Cmd):
     def display_cli_prompt(self):
         self.stdout.write(self.prompt)
         self.stdout.flush()
-
 
     def do_history(self, arg):
         "Display the command history"
@@ -97,13 +97,9 @@ class ControlShell(cmd.Cmd):
 
     def signal_handler(self, signum, frame):
         try:
-            self.logger.warning(
-                    f"\nReceived signal {signum}."
-                )
+            self.logger.warning(f"\nReceived signal {signum}.")
             if signum in (signal.SIGINT, signal.SIGTERM, signal.SIGABRT):
-                self.logger.warning(
-                    f"Stopping all processes."
-                )
+                self.logger.warning(f"Stopping all processes.")
                 self.process_manager.stop_all()
                 self.logger.info("All processes stopped. Exiting.")
                 exit(0)
@@ -113,9 +109,7 @@ class ControlShell(cmd.Cmd):
                 )
                 self.process_manager.reload_configuration()
             elif signum == signal.SIGUSR1:
-                self.logger.warning(
-                    f"Displaying current process status."
-                )
+                self.logger.warning(f"Displaying current process status.")
                 self.process_manager.status()
             elif signum == signal.SIGUSR2:
                 self.toggle_logging_level()
@@ -131,7 +125,6 @@ class ControlShell(cmd.Cmd):
         else:
             self.logger.logger.setLevel(logging.INFO)
             self.logger.info("Switched logging level to INFO.")
-
 
 
 if __name__ == "__main__":

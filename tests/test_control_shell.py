@@ -4,6 +4,7 @@ from taskmaster.control_shell import ControlShell
 from taskmaster.process_manager import ProcessManager
 from taskmaster.logger import Logger
 
+
 class TestControlShell(unittest.TestCase):
     def setUp(self):
         self.config_path = "path/to/test_config.yml"
@@ -26,5 +27,6 @@ class TestControlShell(unittest.TestCase):
         self.control_shell.onecmd("restart")
         self.control_shell.do_restart.assert_called_once()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

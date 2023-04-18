@@ -3,6 +3,7 @@ import subprocess
 import signal
 import time
 
+
 class ProcessController:
     def __init__(self, name, config, logger):
         self.name = name
@@ -39,7 +40,7 @@ class ProcessController:
                 self.stderr = self._get_output_stream("stderr")
                 self.umask = self.config.get("umask", "022")
                 self.process = subprocess.Popen(
-                    self.config['cmd'],
+                    self.config["cmd"],
                     shell=True,
                     cwd=self.config.get("workingdir", None),
                     env=env,
@@ -47,17 +48,29 @@ class ProcessController:
                     stdout=self.stdout,
                     stderr=self.stderr,
                 )
-                time.sleep(self.config.get("starttime", 5)) # TODO: Find better impl
-                if self.process.poll() in self.config.get("exitcodes", [0]) or self.is_active():
+                time.sleep(self.config.get("starttime", 5))  # TODO: Find better impl
+                if (
+                    self.process.poll() in self.config.get("exitcodes", [0])
+                    or self.is_active()
+                ):
                     self.logger.info(f"Process '{self.name}' started successfully")
                     self.monitor = True
                     break
                 else:
-                    self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}")
+                    self.logger.warning(
+                        f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}"
+                    )
             except Exception as e:
-                self.logger.warning(f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}")
-        if self.process.poll() not in self.config.get("exitcodes", [0]) and not self.is_active():
-            self.logger.error(f"Failed to start process '{self.name}' after {retries} attempts")
+                self.logger.warning(
+                    f"Failed to start process '{self.name}', attempt {attempt + 1}/{retries}: {e}"
+                )
+        if (
+            self.process.poll() not in self.config.get("exitcodes", [0])
+            and not self.is_active()
+        ):
+            self.logger.error(
+                f"Failed to start process '{self.name}' after {retries} attempts"
+            )
 
     def terminate_process(self):
         self.monitor = False
@@ -93,12 +106,16 @@ class ProcessController:
     def _get_output_stream(self, stream_type):
         output_path = self.config.get(stream_type, None)
         if output_path:
-            if os.path.dirname(output_path) and not os.path.exists(os.path.dirname(output_path)):
+            if os.path.dirname(output_path) and not os.path.exists(
+                os.path.dirname(output_path)
+            ):
                 os.makedirs(os.path.dirname(output_path))
             try:
                 return open(output_path, "a")
             except Exception as e:
-                self.logger.warning(f"Failed to open {stream_type} file '{output_path}': {e}")
+                self.logger.warning(
+                    f"Failed to open {stream_type} file '{output_path}': {e}"
+                )
                 return subprocess.DEVNULL
         else:
             return subprocess.DEVNULL

@@ -13,13 +13,13 @@ programs:
     startretries: 3
     starttime: 2
     stopsignal: SIGTERM
-    stoptime: 0.00000001
-    stdout: /tmp/ping.stdout
-    stderr: /tmp/ping.stderr
+    stoptime: 2
+    stdout: none
+    stderr: none
     env:
       STARTED_BY: taskmaster
   sleep:
-    cmd: 'sleep 100'
+    cmd: 'sleep 10'
     numprocs: 2
     umask: 022
     workingdir: /tmp
@@ -27,6 +27,8 @@ programs:
     autorestart: unexpected
     exitcodes:
       - 218
+      - 0
+      - 2
     startretries: 2
     starttime: 1
     stopsignal: SIGTERM
