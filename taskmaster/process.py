@@ -2,7 +2,7 @@ import os
 import subprocess
 import signal
 import time
-
+import shlex
 
 class ProcessController:
     def __init__(self, name, config, logger):
@@ -24,6 +24,22 @@ class ProcessController:
 
     def is_active(self):
         return self.process and self.process.poll() is None
+
+    def attach(self):
+        if not self.is_active():
+                self.logger.warning(f"Process '{self.name}' is not running")
+                return
+        try:
+            stdout_path = self.config['stdout']
+            command = f"tail -f {stdout_path}"
+            tail_process = subprocess.Popen(shlex.split(command))
+            # Wait for the user to press Enter
+            input("Press Enter to detach from the process...\n")
+
+            # Terminate the tail -f process
+            tail_process.terminate()
+        except Exception as e:
+            self.logger.error(f"Failed to attach to process '{self.name}': {e}")
 
     def start(self):
         retries = self.config.get("startretries", 3)

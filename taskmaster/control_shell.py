@@ -43,6 +43,24 @@ class ControlShell(cmd.Cmd):
             for i in range(num_commands):
                 print(f"{i + 1}: {readline.get_history_item(i + 1)}")
 
+    def do_attach(self, arg):
+        "Attach to a process: ATTACH <process name> [instance_number]"
+        args = arg.split()
+        if len(args) == 0:
+            self.logger.error("No process name provided.")
+            return
+
+        process_name = args[0]
+        instance_number = None
+        if len(args) > 1:
+            try:
+                instance_number = int(args[1])
+            except ValueError:
+                self.logger.error("Invalid instance number provided.")
+                return
+
+        self.process_manager.attach_instance(process_name, instance_number)
+
     def do_config(self, arg):
         "Display the config of all processes"
         if not arg:

@@ -1,7 +1,7 @@
 programs:
   ping:
     cmd: 'ping 8.8.8.8'
-    numprocs: 1
+    numprocs: 2
     umask: 022
     workingdir: /tmp
     autostart: true
@@ -11,15 +11,15 @@ programs:
       - 2
       - 143
     startretries: 3
-    starttime: 2
+    starttime: 1
     stopsignal: SIGTERM
-    stoptime: 2
+    stoptime: 1
     stdout: /tmp/ping.stdout
     stderr: /tmp/ping.stderr
     env:
       STARTED_BY: taskmaster
   sleep:
-    cmd: 'sleep 10'
+    cmd: 'sleep 1000'
     numprocs: 2
     umask: 022
     workingdir: /tmp
