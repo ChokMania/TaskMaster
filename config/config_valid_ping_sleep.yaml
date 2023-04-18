@@ -14,8 +14,8 @@ programs:
     starttime: 2
     stopsignal: SIGTERM
     stoptime: 2
-    stdout: none
-    stderr: none
+    stdout: /tmp/ping.stdout
+    stderr: /tmp/ping.stderr
     env:
       STARTED_BY: taskmaster
   sleep:
