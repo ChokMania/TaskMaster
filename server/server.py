@@ -16,6 +16,7 @@ class TaskMasterServer:
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen()
 
@@ -43,9 +44,10 @@ class TaskMasterServer:
                 command = data.decode().strip()
                 self.logger.info(f"Received command: {command}")
                 response = self.control_shell.onecmd(command)
-                print("response = ", response)
                 if response is not None:
                     client_socket.sendall(response.encode())
+                else:
+                    client_socket.sendall("No response from the server.".encode())
         finally:
             client_socket.close()
             self.logger.info(f"Closed connection to {client_addr}")

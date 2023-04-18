@@ -47,13 +47,13 @@ def main():
         if args.user and args.group:
             drop_privileges(args.user, args.group, logger)
 
-        if args.daemon:
-            logger.info("Starting TaskMaster as a daemon")
+        if args.server:
+            logger.info("Starting TaskMaster as a server")
             with open(args.logfile, "a") as log_file:
                 logger.info(
                     f"Redirecting stdout and stderr to log file 'taskmaster.log' in {args.logfile}"
                 )
-                # Close all handlers before entering daemon context
+                # Close all handlers before entering server context
                 for handler in logger.logger.handlers:
                     handler.close()
                     logger.logger.removeHandler(handler)

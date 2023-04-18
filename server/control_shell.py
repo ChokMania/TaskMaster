@@ -25,16 +25,38 @@ class ControlShell(cmd.Cmd):
             old_stdout = sys.stdout
             sys.stdout = io.StringIO()
 
-            # Call the superclass method
             super().onecmd(line)
 
             # Get the output from StringIO and restore stdout
             output = sys.stdout.getvalue()
             sys.stdout = old_stdout
+            if line.strip().lower().startswith("help"):
+                command = line.split(" ")[1] if len(line.split(" ")) > 1 else None
+                output = self.get_help_text(topic=command)
+
+            self.logger.info(f"{output}")
 
             return output if output.strip() != "" else "Command executed successfully."
         else:
             return super().onecmd(line)
+
+    def get_help_text(self, topic=None):
+        if topic is None:
+            help_text = "Documented commands (type help <topic>):\n"
+            help_text += "========================================\n"
+
+            commands = []
+            for method_name in dir(self):
+                if method_name.startswith("do_") and method_name != "do_help":
+                    command_name = method_name[3:]
+                    commands.append(command_name)
+
+            help_text += ' '.join(commands) + '\n'
+            return help_text
+        else:
+            for method_name in dir(self):
+                if method_name == "do_" + topic:
+                    return getattr(self, method_name).__doc__
 
     def setup_history(self):
         history_file = ".taskmaster_history"
@@ -62,7 +84,7 @@ class ControlShell(cmd.Cmd):
                 print(f"{i + 1}: {readline.get_history_item(i + 1)}")
 
     def do_attach(self, arg):
-        "Attach to a process: ATTACH <process name> [instance_number]"
+        "Attach to a process (not available in server): ATTACH <process_name> <instance_number>"
         if self.server is not None:
             self.logger.error(
                 "Cannot attach to a process when TaskMaster is running in server mode."

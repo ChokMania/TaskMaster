@@ -66,4 +66,10 @@ kill-ping-sigkill:
 get-ping-umask:
 	@grep '^Umask:' "/proc/`ps -x | grep " ping " | grep -v "grep" | grep -v "/bin/sh" | awk '{print $$1}'`/status"
 
+start-taskmaster-server:
+	@taskmaster_server -c config/config_valid_ping_sleep.yaml --server --server-port 5000 --server-addr localhost
+
+start-taskmaster-client:
+	@taskmaster_client --port 5000 --host localhost
+
 .PHONY: run test lint format install-deps install-deps-dev lint-format kill-hup  kill-usr1 kill-usr2 kill kill-nginx kill-nginx-sigterm kill-nginx-sigstop

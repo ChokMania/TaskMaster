@@ -57,7 +57,8 @@ def parse_args():
         default="./config/syslog.json",
         help="Path to the Syslog configuration file (JSON format)",
     )
-    parser.add_argument("--daemon", action="store_true", help="Run as a daemon")
+    parser.add_argument("--daemon", dest="server", action="store_true", help="Run as a server")
+    parser.add_argument("--server", action="store_true", help="Run as a server")
     parser.add_argument(
         "--pidfile",
         type=str,
