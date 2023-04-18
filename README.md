@@ -98,7 +98,7 @@ You can also send signals to Taskmaster to perform certain actions:
 
 ## Author
 
-This plugin was created by Sithi5 and ChokMania.
+Created by Sithi5 and ChokMania.
 
 ## Contributing
 
