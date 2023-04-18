@@ -1,6 +1,7 @@
 import json
 import daemon
 import sys
+import os
 
 from daemon import pidfile
 from server.process_manager import ProcessManager
@@ -13,6 +14,9 @@ def main():
     process_manager = None
     try:
         args = parse_args()
+
+        # Convert the configuration file path to an absolute path
+        args.config = os.path.abspath(args.config)
 
         smtp_config = None
         if args.smtp_config:
@@ -37,9 +41,19 @@ def main():
             drop_privileges(args.user, args.group, logger)
 
         if args.daemon:
-            log_path = "/tmp/taskmaster.log"  # Change this path to a suitable location
-
+            logger.info("Starting TaskMaster as a daemon")
+            log_path = "/var/log/taskmaster/taskmaster.log"  # Change this path to a suitable location
+            if os.path.dirname(log_path) and not os.path.exists(
+                os.path.dirname(log_path)
+            ):
+                os.makedirs(os.path.dirname(log_path))
             with open(log_path, "a") as log_file:
+                logger.info(f"Redirecting stdout and stderr to log file 'taskmaster.log' in {log_path}")
+                # Close all handlers before entering daemon context
+                for handler in logger.logger.handlers:
+                    handler.close()
+                    logger.logger.removeHandler(handler)
+
                 context = daemon.DaemonContext(
                     pidfile=pidfile.TimeoutPIDLockFile(args.pidfile),
                     stdout=log_file,
@@ -55,11 +69,13 @@ def main():
                         smtp_config=smtp_config,
                         syslog_config=syslog_config,
                     )
+                    logger.info("Starting server")
                     process_manager = ProcessManager(args.config, logger)
                     control_shell = ControlShell(process_manager, logger)
                     logger.display_cli_prompt_method = control_shell.display_cli_prompt
                     control_shell.cmdloop()
         else:
+            logger.info("Starting TaskMaster in the foreground")
             process_manager = ProcessManager(args.config, logger)
             control_shell = ControlShell(process_manager, logger)
             logger.display_cli_prompt_method = control_shell.display_cli_prompt
