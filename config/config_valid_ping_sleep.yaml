@@ -26,14 +26,11 @@ programs:
     autostart: true
     autorestart: unexpected
     exitcodes:
-      - 218
-      - 0
-      - 2
     startretries: 2
     starttime: 1
     stopsignal: SIGTERM
     stoptime: 1
-    stdout: /tmp/sleep.stdout
+    stdout: /sdfkopsekpf/feowkfoewkfkoew.stdout
     stderr: /tmp/sleep.stderr
     env:
       STARTED_BY: taskmaster
